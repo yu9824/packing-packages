@@ -52,6 +52,29 @@ def packing_packages(
 
     if env_name is None:
         env_name = os.environ["CONDA_DEFAULT_ENV"]
+    else:
+        # check environment name
+        result_conda_env_list = subprocess.run(
+            [
+                os.environ["CONDA_EXE"],
+                "info",
+                "-e",
+            ],
+            stdout=subprocess.PIPE,
+        )
+        conda_env_list = result_conda_env_list.stdout.decode(
+            "utf-8"
+        ).splitlines()
+        env_name_list = [
+            line.split()[0]
+            for line in conda_env_list
+            if line and line[0] != "#"
+        ]
+        if env_name not in env_name_list:
+            raise FileNotFoundError(
+                f"'{env_name}' is not found. Please check the environment name."
+            )
+    _logger.info(f"Packing conda environment '{env_name}'...")
 
     dirpath_target = Path(dirpath_target).resolve()
     if not dirpath_target.is_dir():
@@ -59,6 +82,8 @@ def packing_packages(
 
     dirpath_output = dirpath_target / env_name
     os.makedirs(dirpath_output, exist_ok=True)
+
+    _logger.info(f"Packing to '{dirpath_output}'...")
 
     dirpath_output_pypi = dirpath_output / "pypi"
     dirpath_output_conda = dirpath_output / "conda"
@@ -116,6 +141,7 @@ def packing_packages(
                         "install",
                         f"{package.name}=={package.version}",
                         "--no-deps",
+                        "--no-build-isolation",
                         "--python-version",
                         f"{env_python_version}",
                         "--dry-run",
