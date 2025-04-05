@@ -16,9 +16,6 @@ else:
         dummy_tqdm as tqdm,
     )
 
-DIRPATH_CONDA_ROOT = Path(os.environ["CONDA_EXE"]).parent.parent.resolve()
-dirpath_pkgs = DIRPATH_CONDA_ROOT / "pkgs"
-
 
 class Package(NamedTuple):
     name: str
@@ -48,6 +45,15 @@ def packing_packages(
     """
     if dry_run:
         _logger.warning("This is a dry run. No files will be downloaded.")
+
+    # check install conda
+    if "CONDA_EXE" not in os.environ:
+        raise ValueError(
+            "Please install conda and set the CONDA_EXE environment variable."
+        )
+
+    DIRPATH_CONDA_ROOT = Path(os.environ["CONDA_EXE"]).parent.parent.resolve()
+    dirpath_pkgs = DIRPATH_CONDA_ROOT / "pkgs"
 
     if env_name is None:
         env_name = os.environ["CONDA_DEFAULT_ENV"]
