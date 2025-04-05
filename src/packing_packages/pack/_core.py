@@ -226,6 +226,14 @@ def packing_packages(
         f"{n_success} / {(n_success + n_failed)} packages are success!"
     )
 
+    if n_failed > 0:
+        for package in list_failed_packages:
+            _logger.warning(f"  {package.name}=={package.version}")
+        _logger.info(
+            "Please check the above packages. "
+            "If you want to install them, please run the following command:"
+        )
+
 
 if __name__ == "__main__":
     packing_packages("open-webui", "./open-webui")
