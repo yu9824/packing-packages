@@ -1,7 +1,5 @@
 import argparse
-import os
 import sys
-from pathlib import Path
 from typing import Optional
 
 if sys.version_info >= (3, 9):
@@ -10,27 +8,9 @@ else:
     from typing import Sequence
 
 from packing_packages import __version__
-from packing_packages._core import packing_packages
+from packing_packages.pack.__main__ import pack
 
 __all__ = ("main",)
-
-
-def pack(args: argparse.Namespace) -> None:
-    """pack conda environment"""
-    if args.env_name is None:
-        env_name = os.environ["CONDA_DEFAULT_ENV"]
-    else:
-        env_name = args.env_name
-
-    dirpath_target = Path(args.dirpath_target).resolve()
-    if not dirpath_target.is_dir():
-        raise FileNotFoundError(dirpath_target)
-
-    packing_packages(
-        env_name=env_name,
-        dirpath_target=dirpath_target,
-        dry_run=args.dry_run,
-    )
 
 
 def main(cli_args: Sequence[str], prog: Optional[str] = None) -> None:
@@ -63,6 +43,7 @@ def main(cli_args: Sequence[str], prog: Optional[str] = None) -> None:
         help="target directory path",
     )
     parser_pack.add_argument(
+        "-D",
         "--dry-run",
         action="store_true",
         help="do not download files",
