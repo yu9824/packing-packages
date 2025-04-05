@@ -48,6 +48,7 @@ def main(cli_args: Sequence[str], prog: Optional[str] = None) -> None:
         help="pack conda environment",
     )
     parser_pack.add_argument(
+        "-e",
         "-n",
         "--env-name",
         type=str,
