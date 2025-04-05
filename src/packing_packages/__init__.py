@@ -14,7 +14,7 @@ dependencies into a specified directory.
     $ packing-packages install --help
 """
 
-__version__ = "0.0.1-rc.2"
+__version__ = "0.0.1-rc.3"
 __license__ = "MIT"
 __author__ = "yu9824"
 __copyright__ = "Copyright © 2025 yu9824"
