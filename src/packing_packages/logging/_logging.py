@@ -14,7 +14,7 @@ from logging import (
 from types import TracebackType
 from typing import Optional, TypeVar
 
-HANDLER = TypeVar("HANDLER", bound=Handler)
+HandlerType = TypeVar("HandlerType", bound=Handler)
 
 
 def _color_supported() -> bool:
@@ -75,8 +75,8 @@ default_formatter: Formatter = create_default_formatter()
 
 
 def get_handler(
-    handler: HANDLER, formatter: Optional[Formatter] = None, level=NOTSET
-) -> HANDLER:
+    handler: HandlerType, formatter: Optional[Formatter] = None, level=NOTSET
+) -> HandlerType:
     """configure handler in an easy api
 
     Parameters

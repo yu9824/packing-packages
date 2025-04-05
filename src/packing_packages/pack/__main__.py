@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 from typing import Optional, Sequence
 
-from packing_packages.pack import packing_packages
+from packing_packages.pack._core import packing_packages
 
 
 def pack(args: argparse.Namespace) -> None:

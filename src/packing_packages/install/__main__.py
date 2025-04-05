@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 from typing import Optional, Sequence
 
-from packing_packages.install import install_packages
+from packing_packages.install._core import install_packages
 
 
 def install(args: argparse.Namespace) -> None:
