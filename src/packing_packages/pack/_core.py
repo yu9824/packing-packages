@@ -5,6 +5,7 @@ from pathlib import Path
 from shutil import copyfile
 from typing import NamedTuple, Optional, Union
 
+from packing_packages.constants import EXTENSIONS_CONDA
 from packing_packages.logging import get_child_logger
 from packing_packages.utils import is_installed
 
@@ -17,8 +18,6 @@ else:
 
 DIRPATH_CONDA_ROOT = Path(os.environ["CONDA_EXE"]).parent.parent.resolve()
 dirpath_pkgs = DIRPATH_CONDA_ROOT / "pkgs"
-
-EXTENSIONS_CONDA = ("tar.bz2", "conda")
 
 
 class Package(NamedTuple):
