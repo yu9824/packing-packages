@@ -4,6 +4,7 @@ This module provides a function to install packages from a specified
 directory into a conda environment.
 
 .. code-block:: bash
+
     $ python -m packing_packages install --help
 
     or

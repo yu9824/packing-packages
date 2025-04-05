@@ -5,6 +5,7 @@ This module provides functionality to pack conda environments and their
 dependencies into a specified directory.
 
 .. code-block:: bash
+
     $ python -m packing_packages pack --help
     $ python -m packing_packages install --help
 
