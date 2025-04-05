@@ -1,0 +1,51 @@
+#!/bin/bash
+
+# デフォルト値
+TARGET_DIR="./pypi"
+CHUNK_SIZE="250M"
+
+# ヘルプメッセージ
+function show_help {
+    echo "Usage: $0 [options]"
+    echo "Options:"
+    echo "  -d, --target-dir    Target directory to scan for large files (default: ./pypi)"
+    echo "  -s, --chunk-size    Size to split files (default: 250M)"
+    echo "  -h, --help          Show this help message"
+}
+
+# 引数の処理
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -d|--target-dir)
+            TARGET_DIR="$2"
+            shift 2
+            ;;
+        -s|--chunk-size)
+            CHUNK_SIZE="$2"
+            shift 2
+            ;;
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1"
+            show_help
+            exit 1
+            ;;
+    esac
+done
+
+# ファイル分割処理
+find "$TARGET_DIR" -type f -size +$CHUNK_SIZE | while read -r file; do
+    dir=$(dirname "$file")
+    base=$(basename "$file")
+
+    # 分割して保存（拡張子 .split を追加）
+    split -b "$CHUNK_SIZE" --additional-suffix=.split "$file" "$file-"
+
+    # オリジナルファイルを削除
+    rm -f "$file"
+
+    echo "Split and removed: $file"
+done

@@ -1,0 +1,50 @@
+#!/bin/bash
+
+# デフォルト値
+TARGET_DIR="./pypi"
+
+# ヘルプメッセージ
+function show_help {
+    echo "Usage: $0 [options]"
+    echo "Options:"
+    echo "  -d, --target-dir    Target directory to restore split files from (default: ./pypi)"
+    echo "  -h, --help          Show this help message"
+}
+
+# 引数の処理
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -d|--target-dir)
+            TARGET_DIR="$2"
+            shift 2
+            ;;
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1"
+            show_help
+            exit 1
+            ;;
+    esac
+done
+
+# ファイル復元処理
+find "$TARGET_DIR" -type f -name "*.split" | while read -r split_file; do
+    base="${split_file%-*}"  # 元のファイル名を取得（"-aaa.split" 部分を除去）
+
+    # 既に復元されている場合はスキップ
+    if [ -f "$base" ]; then
+        echo "Already restored: $base"
+        continue
+    fi
+
+    # 分割ファイルを結合して元に戻す
+    cat "$base"-*.split > "$base"
+
+    # 分割ファイルを削除
+    rm -f "$base"-*.split
+
+    echo "Restored: $base"
+done
