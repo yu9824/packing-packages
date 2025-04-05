@@ -1,0 +1,7 @@
+packing\_packages.pack package
+==============================
+
+.. automodule:: packing_packages.pack
+   :members:
+   :show-inheritance:
+   :undoc-members:
