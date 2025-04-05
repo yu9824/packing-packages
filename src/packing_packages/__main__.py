@@ -51,7 +51,7 @@ def main(cli_args: Sequence[str], prog: Optional[str] = None) -> None:
     parser_pack.set_defaults(func=pack)
 
     args = parser.parse_args(cli_args)
-    args.func(parser.parse_args(cli_args))
+    args.func(args)
 
 
 def entrypoint() -> None:

@@ -81,7 +81,8 @@ def packing_packages(
         raise FileNotFoundError(dirpath_target)
 
     dirpath_output = dirpath_target / env_name
-    os.makedirs(dirpath_output, exist_ok=True)
+    if not dry_run:
+        os.makedirs(dirpath_output, exist_ok=True)
 
     _logger.info(f"Packing to '{dirpath_output}'...")
 
