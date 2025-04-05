@@ -37,7 +37,7 @@ def packing_packages(
 ) -> None:
     """packaging conda environment packages
 
-    packing_packages
+    Parameters
     ----------
     env_name : str
         conda environment name
