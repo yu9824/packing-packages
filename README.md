@@ -17,3 +17,29 @@
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/packing-packages.svg)](https://anaconda.org/conda-forge/packing-packages)
 [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/packing-packages.svg)](https://anaconda.org/conda-forge/packing-packages)
 -->
+
+## Install
+
+```bash
+# Need python, setuptools, pip package
+pip install -e . --no-deps --no-build-isolation
+
+```
+
+## How to use
+
+see `--help`.
+
+### Pack
+
+```bash
+packing-package pack .
+
+```
+
+### Install
+
+```bash
+packing-package install .
+
+```
