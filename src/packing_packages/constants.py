@@ -17,3 +17,9 @@ EXTENSIONS_PYPI: tuple[Literal["whl"], Literal["tar.gz"]] = (
 
 These are the extensions used by PyPI packages.
 """
+
+ENCODING: Literal["utf-8"] = "utf-8"
+"""Encoding for file operations.
+This is the encoding used for file operations in the project.
+It is set to 'utf-8' to ensure compatibility with most text files.
+"""
