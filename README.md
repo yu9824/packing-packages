@@ -1,4 +1,4 @@
-# packing-packages
+# PACKING-PACKAGES
 
 [![CI](https://github.com/yu9824/packing-packages/actions/workflows/CI.yml/badge.svg)](https://github.com/yu9824/packing-packages/actions/workflows/CI.yml)
 [![docs](https://github.com/yu9824/packing-packages/actions/workflows/docs.yml/badge.svg)](https://github.com/yu9824/packing-packages/actions/workflows/docs.yml)
@@ -19,6 +19,10 @@
 -->
 
 ## Install
+
+Packing packages for distribution and installation.
+
+This module provides functionality to pack conda environments and their dependencies into a specified directory.
 
 ```bash
 # Need python, setuptools, pip package
