@@ -5,7 +5,7 @@ from pathlib import Path
 from shutil import copyfile
 from typing import NamedTuple, Optional, Union
 
-from packing_packages.constants import EXTENSIONS_CONDA
+from packing_packages.constants import ENCODING, EXTENSIONS_CONDA
 from packing_packages.logging import get_child_logger
 from packing_packages.utils import is_installed
 
@@ -62,15 +62,15 @@ def packing_packages(
             stdout=subprocess.PIPE,
         )
         conda_env_list = result_conda_env_list.stdout.decode(
-            "utf-8"
+            ENCODING
         ).splitlines()
-        env_name_list = [
+        env_name_list = {
             line.split()[0]
             for line in conda_env_list
             if line and line[0] != "#"
-        ]
+        }
         if env_name not in env_name_list:
-            raise FileNotFoundError(
+            raise ValueError(
                 f"'{env_name}' is not found. Please check the environment name."
             )
     _logger.info(f"Packing conda environment '{env_name}'...")
@@ -100,7 +100,7 @@ def packing_packages(
         ],
         stdout=subprocess.PIPE,
     )
-    conda_list = result_conda_list.stdout.decode("utf-8").splitlines()
+    conda_list = result_conda_list.stdout.decode(ENCODING).splitlines()
 
     # conda listの出力をパースする
     list_packages: list[Package] = []
@@ -169,10 +169,10 @@ def packing_packages(
                     stderr=subprocess.PIPE,
                 )
 
-            _logger.info("\n" + result_pip_download.stdout.decode("utf-8"))
+            _logger.info("\n" + result_pip_download.stdout.decode(ENCODING))
             if result_pip_download.returncode != 0:
                 _logger.warning(f"'{package}' is not found.")
-                _logger.error(result_pip_download.stderr.decode("utf-8"))
+                _logger.error(result_pip_download.stderr.decode(ENCODING))
                 list_failed_packages.append(package)
 
             continue
@@ -203,10 +203,10 @@ def packing_packages(
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
-            _logger.info(result_conda_download.stdout.decode("utf-8"))
+            _logger.info(result_conda_download.stdout.decode(ENCODING))
             if result_conda_download.returncode != 0:
                 _logger.warning(f"'{package}' is not found.")
-                _logger.error(result_conda_download.stderr.decode("utf-8"))
+                _logger.error(result_conda_download.stderr.decode(ENCODING))
                 list_failed_packages.append(package)
         else:
             for filepath_package in tup_filepaths_package:

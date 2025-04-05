@@ -8,6 +8,7 @@ else:
     from typing import Sequence
 
 from packing_packages import __version__
+from packing_packages.install.__main__ import install
 from packing_packages.pack.__main__ import pack
 
 __all__ = ("main",)
@@ -49,6 +50,27 @@ def main(cli_args: Sequence[str], prog: Optional[str] = None) -> None:
         help="do not download files",
     )
     parser_pack.set_defaults(func=pack)
+
+    parser_install = subparsers.add_parser(
+        "install",
+        help="install packages in the conda environment",
+    )
+    parser_install.add_argument(
+        "-e",
+        "-n",
+        "--env-name",
+        type=str,
+        default=None,
+        help="conda environment name",
+    )
+    parser_install.add_argument(
+        type=str,
+        default=".",
+        help="directory path of packages",
+        metavar="DIRPATH_PACKAGES",
+        dest="dirpath_packages",
+    )
+    parser_install.set_defaults(func=install)
 
     args = parser.parse_args(cli_args)
     args.func(args)
