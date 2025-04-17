@@ -18,9 +18,10 @@
 [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/packing-packages.svg)](https://anaconda.org/conda-forge/packing-packages)
 -->
 
-Packing packages for distribution and installation.
-
 This module provides functionality to pack conda environments and their dependencies into a specified directory.
+
+You can use this package to migrate a conda environment to another offline machine with the same operating system.
+
 
 ## Install
 
@@ -47,3 +48,26 @@ packing-package pack .
 packing-package install .
 
 ```
+
+## Example
+
+### Source device
+
+```bash
+conda activate <envname>
+python -m pip install git+https://github.com/yu9824/packing-packages.git --no-build-isolation --no-deps
+python -m packing_packages pack .
+
+```
+
+### Destination device (offline)
+
+```bash
+conda create -yn <envname> --offline
+conda activate <envname>
+conda install --use-local --offline ./conda/*
+python -m pip install --no-deps --no-build-isolation ./pypi/*
+
+```
+
+
