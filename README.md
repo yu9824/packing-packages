@@ -26,7 +26,7 @@ This module provides functionality to pack conda environments and their dependen
 
 ```bash
 # Need python, setuptools, pip package
-pip install git+https://github.com/yu9824/packing-packages.git --no-build-isloation --no-deps
+pip install git+https://github.com/yu9824/packing-packages.git --no-build-isolation --no-deps
 
 ```
 
