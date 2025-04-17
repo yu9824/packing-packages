@@ -18,11 +18,11 @@
 [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/packing-packages.svg)](https://anaconda.org/conda-forge/packing-packages)
 -->
 
-## Install
-
 Packing packages for distribution and installation.
 
 This module provides functionality to pack conda environments and their dependencies into a specified directory.
+
+## Install
 
 ```bash
 # Need python, setuptools, pip package
