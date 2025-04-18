@@ -183,6 +183,7 @@ def packing_packages(
 
             continue
 
+        # conda
         tup_filepaths_package = tuple(
             dirpath_pkgs
             / f"{package.name}-{package.version}-{package.build}.{ext}"
@@ -214,16 +215,19 @@ def packing_packages(
                 _logger.warning(f"'{package}' is not found.")
                 _logger.error(result_conda_download.stderr.decode(ENCODING))
                 list_failed_packages.append(package)
-        else:
-            for filepath_package in tup_filepaths_package:
-                if filepath_package.is_file():
-                    _logger.info(f"copying {filepath_package.name}")
-                    if not dry_run:
-                        copyfile(
-                            filepath_package,
-                            dirpath_output_conda / filepath_package.name,
-                        )
-                    break
+                # 失敗したら次のパッケージへ (コピーできない)
+                continue
+
+        # ある or donwloadに成功したときはコピーする
+        for filepath_package in tup_filepaths_package:
+            if filepath_package.is_file():
+                _logger.info(f"copying {filepath_package.name}")
+                if not dry_run:
+                    copyfile(
+                        filepath_package,
+                        dirpath_output_conda / filepath_package.name,
+                    )
+                break
 
     n_success = len(list_packages) - len(list_failed_packages)
     n_failed = len(list_failed_packages)
