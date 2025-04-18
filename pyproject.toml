@@ -34,7 +34,7 @@ gui = ["TkEasyGUI"]
 
 [project.urls]
 Homepage = "https://github.com/yu9824/packing-packages"
-# Documentation = "https://readthedocs.org"
+Documentation = "https://yu9824.github.io/packing-packages/"
 PyPI = "https://pypi.org/project/packing-packages/"
 Source = "https://github.com/yu9824/packing-packages"
 Tracker = "https://github.com/yu9824/packing-packages/issues"
