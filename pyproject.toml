@@ -7,17 +7,16 @@ build-backend = "setuptools.build_meta"
 name = "packing-packages"
 dynamic = ["version"]
 dependencies = []
-requires-python = ">= 3.8"
+requires-python = ">= 3.9"
 authors = [{ name = "yu9824" }]
 maintainers = [{ name = "yu9824" }]
-description = ""
+description = "This module provides functionality to pack conda environments and their dependencies into a specified directory."
 readme = { file = "README.md", content-type = "text/markdown" }
 license = { file = "LICENSE" }
-keywords = []
+keywords = ["anaconda", "conda"]
 # https://pypi.org/classifiers/
 classifiers = [
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
