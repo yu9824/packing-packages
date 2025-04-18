@@ -1,7 +1,9 @@
 import argparse
 import os
+import sys
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Optional, Sequence
+from typing import Optional
 
 from packing_packages.pack._core import packing_packages
 
