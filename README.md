@@ -38,7 +38,7 @@ see `--help`.
 ### Pack
 
 ```bash
-packing-package pack .
+packing-package pack -d .
 
 ```
 
@@ -56,7 +56,7 @@ packing-package install .
 ```bash
 conda activate <envname>
 python -m pip install git+https://github.com/yu9824/packing-packages.git --no-build-isolation --no-deps
-python -m packing_packages pack .
+python -m packing_packages pack -d .
 
 ```
 
@@ -70,4 +70,28 @@ python -m pip install --no-deps --no-build-isolation ./pypi/*
 
 ```
 
+## Notes
 
+If you want to use pip to download from a source other than pypi.org (e.g. pytorch), the above will not completely collect. You will see packages that failed to download, so you will have to download them manually.
+This is very complicated and we do not plan to support it.
+
+```bash
+# install command
+pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cu124
+
+# download command
+# --no-deps: only target package
+# -d: destination directory to download
+pip download torch==2.5.1 --index-url https://download.pytorch.org/whl/cu124 --no-deps -d .
+```
+
+Some older packages may not install with `pip install`. In this case, you may succeed by installing only the failed packages with the `--use-pep517` option.
+Please perform this manually.
+
+There are two methods of installation: one is to use the standard functions of conda and pip, and the second is to use the `paciking-package install` command, which wraps them. The advantages of each are summarized in the table below.
+
+
+| Commands                          | Advantages                                      | Disadvantages                     |
+| --------------------------------- | ----------------------------------------------- | --------------------------------- |
+| `conda install`  or `pip install` | Fast                                            | Stop immediately when cause error |
+| `packing-package install`         | Skip when error occurs and tell you the package | Slow                              |
