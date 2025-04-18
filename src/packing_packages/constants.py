@@ -1,3 +1,8 @@
+"""This module contains constants used throughout the packing_packages package.
+
+It includes constants for file extensions, encoding, and other configuration values.
+"""
+
 from typing import Literal
 
 EXTENSIONS_CONDA: tuple[Literal["tar.bz2"], Literal["conda"]] = (

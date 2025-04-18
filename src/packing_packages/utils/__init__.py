@@ -1,4 +1,9 @@
-"""utilities"""
+"""utils module for packing_packages.
+
+This module provides utility functions and classes for the packing_packages package.
+It includes functions for checking if a package is installed, creating dummy progress bars,
+and checking if an argument is passed to a function.
+"""
 
 from ._utils import dummy_tqdm, is_argument, is_installed
 
