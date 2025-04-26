@@ -1,7 +1,8 @@
 import importlib.util
 import inspect
+import sys
 from collections.abc import Callable, Iterable, Iterator
-from typing import Any, Generic, TypeVar
+from typing import Any, Generic, Optional, TypeVar
 
 T = TypeVar("T")
 
@@ -40,8 +41,7 @@ def is_argument(__callable: "Callable[..., Any]", arg_name: str) -> bool:
     return arg_name in set(inspect.signature(__callable).parameters.keys())
 
 
-# HACK: when drop python3.8, use `dummy_tqdm(Iterable[T])`
-class dummy_tqdm(Iterable, Generic[T]):
+class dummy_tqdm(Iterable[T]):
     """dummy class for 'tqdm'
 
     Parameters
@@ -63,3 +63,25 @@ class dummy_tqdm(Iterable, Generic[T]):
     def __no_operation(*args, **kwargs) -> None:
         """no-operation"""
         return
+
+
+def check_encoding(encoding: Optional[str]) -> str:
+    """Check if the encoding is valid.
+
+    Parameters
+    ----------
+    encoding : str
+        encoding name
+
+    Returns
+    -------
+    str
+        encoding name
+    """
+    if encoding is None:
+        return sys.getdefaultencoding()
+    try:
+        "".encode(encoding)
+        return encoding
+    except LookupError as e:
+        raise ValueError(f"Invalid encoding: {encoding}") from e
