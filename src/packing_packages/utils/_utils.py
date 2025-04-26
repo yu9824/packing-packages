@@ -2,7 +2,7 @@ import importlib.util
 import inspect
 import sys
 from collections.abc import Callable, Iterable, Iterator
-from typing import Any, Generic, Optional, TypeVar
+from typing import Any, Optional, TypeVar
 
 T = TypeVar("T")
 
