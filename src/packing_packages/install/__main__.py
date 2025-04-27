@@ -21,6 +21,7 @@ def install(args: argparse.Namespace) -> None:
     install_packages(
         dirpath_packages=dirpath_packages,
         env_name=env_name,
+        encoding=args.encoding,
     )
 
 
@@ -43,6 +44,12 @@ def main(cli_args: Sequence[str], prog: Optional[str] = None) -> None:
         type=str,
         default=None,
         help="conda environment name",
+    )
+    parser.add_argument(
+        "--encoding",
+        type=str,
+        default=None,
+        help="encoding for subprocess",
     )
     parser.set_defaults(func=install)
     args = parser.parse_args(cli_args)

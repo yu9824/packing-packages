@@ -30,8 +30,8 @@ _logger = get_child_logger(__name__)
 def packing_packages(
     env_name: Optional[str] = None,
     dirpath_target: Union[os.PathLike, str] = ".",
-    dry_run: bool = False,
     encoding: Optional[str] = None,
+    dry_run: bool = False,
 ) -> None:
     """packaging conda environment packages
 

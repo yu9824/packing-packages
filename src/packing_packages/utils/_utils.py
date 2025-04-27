@@ -4,6 +4,10 @@ import sys
 from collections.abc import Callable, Iterable, Iterator
 from typing import Any, Optional, TypeVar
 
+from packing_packages.logging import get_child_logger
+
+_logger = get_child_logger(__name__)
+
 T = TypeVar("T")
 
 
@@ -79,7 +83,8 @@ def check_encoding(encoding: Optional[str]) -> str:
         encoding name
     """
     if encoding is None:
-        return sys.getdefaultencoding()
+        encoding = sys.getdefaultencoding()
+        _logger.info(f"Use default encoding: {encoding}.")
     try:
         "".encode(encoding)
         return encoding

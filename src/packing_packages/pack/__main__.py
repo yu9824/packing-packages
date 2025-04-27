@@ -22,6 +22,7 @@ def pack(args: argparse.Namespace) -> None:
     packing_packages(
         env_name=env_name,
         dirpath_target=dirpath_target,
+        encoding=args.encoding,
         dry_run=args.dry_run,
     )
 
@@ -47,6 +48,12 @@ def main(cli_args: Sequence[str], prog: Optional[str] = None) -> None:
         help="target directory path for packing the environment",
     )
     parser.add_argument("-D", "--dry-run", action="store_true", help="dry run")
+    parser.add_argument(
+        "--encoding",
+        type=str,
+        default=None,
+        help="encoding for subprocess",
+    )
     parser.set_defaults(func=pack)
 
     args = parser.parse_args(cli_args)
