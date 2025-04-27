@@ -4,11 +4,10 @@ from pathlib import Path
 from typing import Optional, Union
 
 from packing_packages.constants import (
-    ENCODING,
     EXTENSIONS_CONDA,
     EXTENSIONS_PYPI,
 )
-from packing_packages.utils import is_installed
+from packing_packages.utils import check_encoding, is_installed
 
 if is_installed("tqdm"):
     from tqdm import tqdm
@@ -25,6 +24,7 @@ _logger = get_child_logger(__name__)
 def install_packages(
     env_name: Optional[str] = None,
     dirpath_packages: Union[str, os.PathLike] = ".",
+    encoding: Optional[str] = None,
 ) -> None:
     """install conda packages
 
@@ -35,6 +35,8 @@ def install_packages(
     dirpath_packages : Union[str, os.PathLike], optional
         directory path of packages
     """
+    encoding = check_encoding(encoding)
+
     if env_name is None:
         env_name = os.environ["CONDA_DEFAULT_ENV"]
     else:
@@ -48,7 +50,7 @@ def install_packages(
             stdout=subprocess.PIPE,
         )
         conda_env_list = result_conda_env_list.stdout.decode(
-            ENCODING
+            encoding
         ).splitlines()
         env_name_list = {
             line.split()[0]
@@ -108,12 +110,12 @@ def install_packages(
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-        _logger.info(result_conda_install.stdout.decode(ENCODING))
+        _logger.info(result_conda_install.stdout.decode(encoding))
         if result_conda_install.returncode != 0:
             _logger.warning(
                 f"Failed to install conda package: {filepath_conda}"
             )
-            _logger.error(result_conda_install.stderr.decode(ENCODING))
+            _logger.error(result_conda_install.stderr.decode(encoding))
             list_filepaths_conda_failed.append(filepath_conda)
 
     # install pypi packages
@@ -138,10 +140,10 @@ def install_packages(
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-        _logger.info(result_pip_install.stdout.decode(ENCODING))
+        _logger.info(result_pip_install.stdout.decode(encoding))
         if result_pip_install.returncode != 0:
             _logger.warning(f"Failed to install PyPI package: {filepath_pypi}")
-            _logger.error(result_pip_install.stderr.decode(ENCODING))
+            _logger.error(result_pip_install.stderr.decode(encoding))
             list_filepaths_pypi_failed.append(filepath_pypi)
 
     if list_filepaths_conda_failed:

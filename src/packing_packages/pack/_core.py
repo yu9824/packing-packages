@@ -5,9 +5,9 @@ from pathlib import Path
 from shutil import copyfile
 from typing import NamedTuple, Optional, Union
 
-from packing_packages.constants import ENCODING, EXTENSIONS_CONDA
+from packing_packages.constants import EXTENSIONS_CONDA
 from packing_packages.logging import get_child_logger
-from packing_packages.utils import is_installed
+from packing_packages.utils import check_encoding, is_installed
 
 if is_installed("tqdm"):
     from tqdm.auto import tqdm
@@ -31,6 +31,7 @@ def packing_packages(
     env_name: Optional[str] = None,
     dirpath_target: Union[os.PathLike, str] = ".",
     dry_run: bool = False,
+    encoding: Optional[str] = None,
 ) -> None:
     """packaging conda environment packages
 
@@ -43,6 +44,9 @@ def packing_packages(
     dry_run : bool
         if True, do not download files
     """
+
+    encoding = check_encoding(encoding)
+
     if dry_run:
         _logger.warning("This is a dry run. No files will be downloaded.")
 
@@ -68,7 +72,7 @@ def packing_packages(
             stdout=subprocess.PIPE,
         )
         conda_env_list = result_conda_env_list.stdout.decode(
-            ENCODING
+            encoding
         ).splitlines()
         env_name_list = {
             line.split()[0]
@@ -106,7 +110,7 @@ def packing_packages(
         ],
         stdout=subprocess.PIPE,
     )
-    conda_list = result_conda_list.stdout.decode(ENCODING).splitlines()
+    conda_list = result_conda_list.stdout.decode(encoding).splitlines()
 
     # conda listの出力をパースする
     list_packages: list[Package] = []
@@ -175,10 +179,10 @@ def packing_packages(
                     stderr=subprocess.PIPE,
                 )
 
-            _logger.info("\n" + result_pip_download.stdout.decode(ENCODING))
+            _logger.info("\n" + result_pip_download.stdout.decode(encoding))
             if result_pip_download.returncode != 0:
                 _logger.warning(f"'{package}' is not found.")
-                _logger.error(result_pip_download.stderr.decode(ENCODING))
+                _logger.error(result_pip_download.stderr.decode(encoding))
                 list_failed_packages.append(package)
 
             continue
@@ -210,10 +214,10 @@ def packing_packages(
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
-            _logger.info(result_conda_download.stdout.decode(ENCODING))
+            _logger.info(result_conda_download.stdout.decode(encoding))
             if result_conda_download.returncode != 0:
                 _logger.warning(f"'{package}' is not found.")
-                _logger.error(result_conda_download.stderr.decode(ENCODING))
+                _logger.error(result_conda_download.stderr.decode(encoding))
                 list_failed_packages.append(package)
                 # 失敗したら次のパッケージへ (コピーできない)
                 continue
