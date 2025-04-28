@@ -92,3 +92,14 @@ There are two methods of installation: one is to use the standard functions of c
 | --------------------------------- | ----------------------------------------------- | --------------------------------- |
 | `conda install`  or `pip install` | Fast                                            | Stop immediately when cause error |
 | `packing-package install`         | Skip when error occurs and tell you the package | Slow                              |
+
+
+If you have an env file (.yaml), please create a virtual environment from it and then pack it.
+
+```bash
+# on online device with same OS
+conda env create -f=env_name.yml
+conda activate <env_name>
+python3 -m pip install packing-packages
+packing-packages pack -d .
+```
