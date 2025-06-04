@@ -27,35 +27,51 @@ def pack(args: argparse.Namespace) -> None:
     )
 
 
+def add_arguments_pack(parser: argparse.ArgumentParser):
+    parser.add_argument(
+        "-n",
+        "--env-name",
+        type=str,
+        default=None,
+        help=(
+            "Name of the conda environment to pack. If not specified, the current active environment is used."
+        ),
+    )
+    parser.add_argument(
+        "-d",
+        "--dirpath-target",
+        type=Path,
+        default=".",
+        help=(
+            "Path to the directory where the packed environment will be saved. Defaults to the current directory."
+        ),
+    )
+    parser.add_argument(
+        "-D",
+        "--dry-run",
+        action="store_true",
+        help=(
+            "Perform a dry run without actually packing the environment. Useful for testing."
+        ),
+    )
+    parser.add_argument(
+        "-e",
+        "--encoding",
+        type=str,
+        default=None,
+        help=(
+            "Encoding to use for subprocess execution. If not set, system default is used."
+        ),
+    )
+    parser.set_defaults(func=pack)
+
+
 def main(cli_args: Sequence[str], prog: Optional[str] = None) -> None:
     """Main function to parse arguments and call the packing function."""
     parser = argparse.ArgumentParser(
         prog=prog, description="pack conda environment"
     )
-    parser.add_argument(
-        "-e",
-        "-n",
-        "--env-name",
-        type=str,
-        default=None,
-        help="conda environment name",
-    )
-    parser.add_argument(
-        "-d",
-        "--dirpath-target",
-        type=str,
-        default=".",
-        help="target directory path for packing the environment",
-    )
-    parser.add_argument("-D", "--dry-run", action="store_true", help="dry run")
-    parser.add_argument(
-        "--encoding",
-        type=str,
-        default=None,
-        help="encoding for subprocess",
-    )
-    parser.set_defaults(func=pack)
-
+    add_arguments_pack(parser)
     args = parser.parse_args(cli_args)
     args.func(args)
 
