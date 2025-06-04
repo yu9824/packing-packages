@@ -25,32 +25,45 @@ def install(args: argparse.Namespace) -> None:
     )
 
 
+def add_arguments_install(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "dirpath-packages",
+        type=Path,
+        default=".",
+        help=(
+            "Path to the directory containing packages to install (e.g., *.tar.bz2, *.conda). "
+            "Defaults to the current directory ('.') if not specified."
+        ),
+        metavar="DIRPATH_PACKAGES",
+    )
+    parser.add_argument(
+        "-n",
+        "--env-name",
+        type=str,
+        default=None,
+        help=(
+            "Name of the conda environment where packages will be installed. "
+            "If not specified, the currently active environment will be used."
+        ),
+    )
+    parser.add_argument(
+        "-e",
+        "--encoding",
+        type=str,
+        default=None,
+        help=(
+            "Encoding to use for subprocess execution (e.g., when calling conda commands). "
+            "Defaults to the system encoding if not specified."
+        ),
+    )
+    parser.set_defaults(func=install)
+
+
 def main(cli_args: Sequence[str], prog: Optional[str] = None) -> None:
     """Main function to parse arguments and call the install function."""
     parser = argparse.ArgumentParser(
         prog=prog, description="Install packages in the conda environment"
     )
-    parser.add_argument(
-        "dirpath-packages",
-        type=str,
-        default=".",
-        help="directory path of packages",
-        metavar="DIRPATH_PACKAGES",
-    )
-    parser.add_argument(
-        "-e",
-        "-n",
-        "--env-name",
-        type=str,
-        default=None,
-        help="conda environment name",
-    )
-    parser.add_argument(
-        "--encoding",
-        type=str,
-        default=None,
-        help="encoding for subprocess",
-    )
-    parser.set_defaults(func=install)
+    add_arguments_install(parser)
     args = parser.parse_args(cli_args)
     args.func(args)

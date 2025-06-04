@@ -1,15 +1,11 @@
 import argparse
 import sys
+from collections.abc import Sequence
 from typing import Optional
 
-if sys.version_info >= (3, 9):
-    from collections.abc import Sequence
-else:
-    from typing import Sequence
-
 from packing_packages import __version__
-from packing_packages.install.__main__ import install
-from packing_packages.pack.__main__ import pack
+from packing_packages.install.__main__ import add_arguments_install
+from packing_packages.pack.__main__ import add_arguments_pack
 
 __all__ = ("main",)
 
@@ -28,49 +24,13 @@ def main(cli_args: Sequence[str], prog: Optional[str] = None) -> None:
         "pack",
         help="pack conda environment",
     )
-    parser_pack.add_argument(
-        "-e",
-        "-n",
-        "--env-name",
-        type=str,
-        default=None,
-        help="conda environment name",
-    )
-    parser_pack.add_argument(
-        "-d",
-        "--dirpath-target",
-        type=str,
-        default=".",
-        help="target directory path",
-    )
-    parser_pack.add_argument(
-        "-D",
-        "--dry-run",
-        action="store_true",
-        help="do not download files",
-    )
-    parser_pack.set_defaults(func=pack)
+    add_arguments_pack(parser_pack)
 
     parser_install = subparsers.add_parser(
         "install",
         help="install packages in the conda environment",
     )
-    parser_install.add_argument(
-        "-e",
-        "-n",
-        "--env-name",
-        type=str,
-        default=None,
-        help="conda environment name",
-    )
-    parser_install.add_argument(
-        type=str,
-        default=".",
-        help="directory path of packages",
-        metavar="DIRPATH_PACKAGES",
-        dest="dirpath_packages",
-    )
-    parser_install.set_defaults(func=install)
+    add_arguments_install(parser_install)
 
     args = parser.parse_args(cli_args)
     args.func(args)
