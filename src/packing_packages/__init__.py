@@ -16,7 +16,7 @@ dependencies into a specified directory.
 
 """
 
-__version__ = "0.1.0-rc.0"
+__version__ = "0.1.0"
 __license__ = "MIT"
 __author__ = "yu9824"
 __copyright__ = "Copyright © 2025 yu9824"
