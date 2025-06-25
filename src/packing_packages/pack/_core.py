@@ -128,7 +128,7 @@ def packing_packages(
         if package.name == "python":
             env_python_version = package.version
 
-    # # conda listで取得したpythonのバージョンと、現在のpythonのバージョンが異なる場合は警告を出す
+    # conda listで取得したpythonのバージョンと、現在のpythonのバージョンが異なる場合は警告を出す
     if (
         tuple(map(int, env_python_version.split(".")[:2]))
         != sys.version_info[:2]
@@ -209,7 +209,11 @@ def packing_packages(
                     "--no-deps",
                     "--download-only",
                 ]
-                + (["-c", package.channel] if package.channel else [])
+                + (
+                    ["-c", package.channel]
+                    if package.channel
+                    else ["-c", "defaults"]
+                )
                 + (["--dry-run"] if dry_run else []),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
