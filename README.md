@@ -35,14 +35,14 @@ see `--help`.
 ### Pack
 
 ```bash
-packing-package pack -d .
+packing-packages pack -d .
 
 ```
 
 ### Install
 
 ```bash
-packing-package install .
+packing-packages install .
 
 ```
 
@@ -91,17 +91,17 @@ Some older packages may not install successfully using `pip install`. In such ca
 pip install <package-name> --use-pep517
 ```
 
-### Choosing Between Standard Install Commands and `packing-package install`
+### Choosing Between Standard Install Commands and `packing-packages install`
 
 There are two main methods for installing packages:
 
 1. Using `conda install` or `pip install`
-2. Using the `packing-package install` command, which wraps these tools and provides error handling
+2. Using the `packing-packages install` command, which wraps these tools and provides error handling
 
 | Command                         | Advantages                             | Disadvantages                |
 | ------------------------------- | -------------------------------------- | ---------------------------- |
 | `conda install` / `pip install` | Fast execution                         | Stops immediately upon error |
-| `packing-package install`       | Skips failed packages and reports them | Slower installation process  |
+| `packing-packages install`      | Skips failed packages and reports them | Slower installation process  |
 
 
 ### Packing an Environment Using a `.yaml` File
