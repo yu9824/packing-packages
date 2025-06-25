@@ -69,37 +69,58 @@ python -m pip install --no-deps --no-build-isolation ./pypi/*
 
 ## Notes
 
-If you want to use pip to download from a source other than pypi.org (e.g. pytorch), the above will not completely collect. You will see packages that failed to download, so you will have to download them manually.
-This is very complicated and we do not plan to support it.
+### Installing PyTorch from a Non-PyPI Source
+
+If you want to use pip to download packages from a source other than PyPI (e.g., the official PyTorch index), standard methods may not complete successfully. Some packages may fail to download and must be handled manually. This process is complex, and automated support is not currently provided.
 
 ```bash
-# install command
+# Installation command
 pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cu124
 
-# download command
-# --no-deps: only target package
-# -d: destination directory to download
+# Download command (without dependencies)
+# --no-deps: download only the specified package
+# -d: set the destination directory
 pip download torch==2.5.1 --index-url https://download.pytorch.org/whl/cu124 --no-deps -d .
 ```
 
-Some older packages may not install with `pip install`. In this case, you may succeed by installing only the failed packages with the `--use-pep517` option.
-Please perform this manually.
+### Handling Installation Failures with `--use-pep517`
 
-There are two methods of installation: one is to use the standard functions of conda and pip, and the second is to use the `paciking-package install` command, which wraps them. The advantages of each are summarized in the table below.
-
-
-| Commands                          | Advantages                                      | Disadvantages                     |
-| --------------------------------- | ----------------------------------------------- | --------------------------------- |
-| `conda install`  or `pip install` | Fast                                            | Stop immediately when cause error |
-| `packing-package install`         | Skip when error occurs and tell you the package | Slow                              |
-
-
-If you have an env file (.yaml), please create a virtual environment from it and then pack it.
+Some older packages may not install successfully using `pip install`. In such cases, you may be able to install them manually using the `--use-pep517` option:
 
 ```bash
-# on online device with same OS
+pip install <package-name> --use-pep517
+```
+
+### Choosing Between Standard Install Commands and `packing-package install`
+
+There are two main methods for installing packages:
+
+1. Using `conda install` or `pip install`
+2. Using the `packing-package install` command, which wraps these tools and provides error handling
+
+| Command                         | Advantages                             | Disadvantages                |
+| ------------------------------- | -------------------------------------- | ---------------------------- |
+| `conda install` / `pip install` | Fast execution                         | Stops immediately upon error |
+| `packing-package install`       | Skips failed packages and reports them | Slower installation process  |
+
+
+### Packing an Environment Using a `.yaml` File
+
+If you already have an environment file (`.yaml`), you can create and pack the environment on an online machine with the same OS:
+
+```bash
+# On an online machine with the same OS
 conda env create -f=env_name.yml
 conda activate <env_name>
 python3 -m pip install packing-packages
 packing-packages pack -d .
+```
+
+### Using a Proxy (If Required)
+
+If you are in an environment that requires a proxy, you may need to configure the proxy settings before downloading or installing packages:
+
+```bash
+export HTTP_PROXY="your proxy"
+export HTTPS_PROXY="your proxy"
 ```
