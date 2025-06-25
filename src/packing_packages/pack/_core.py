@@ -236,6 +236,12 @@ def packing_packages(
                         dirpath_output_conda / filepath_package.name,
                     )
                 break
+        else:
+            # ここに来るのは、conda installでダウンロードできなかった場合
+            _logger.warning(
+                f"'{package}' is not found in the {dirpath_pkgs} directory."
+            )
+            list_failed_packages.append(package)
 
     n_success = len(list_packages) - len(list_failed_packages)
     n_failed = len(list_failed_packages)
