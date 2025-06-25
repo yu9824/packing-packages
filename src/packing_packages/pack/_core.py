@@ -1,6 +1,9 @@
 import os
+import re
 import subprocess
 import sys
+import urllib.error
+import urllib.request
 from pathlib import Path
 from shutil import copyfile
 from typing import NamedTuple, Optional, Union
@@ -193,49 +196,64 @@ def packing_packages(
             / f"{package.name}-{package.version}-{package.build}.{ext}"
             for ext in EXTENSIONS_CONDA
         )
-        # ないなら、conda installでダウンロードする
-        if not any(
-            filepath_package.is_file()
-            for filepath_package in tup_filepaths_package
-        ):
-            result_conda_download = subprocess.run(
-                [
-                    os.environ["CONDA_EXE"],
-                    "install",
-                    "-y",
-                    "-n",
-                    env_name,
-                    f"{package.name}={package.version}={package.build}",
-                    "--no-deps",
-                    "--download-only",
-                ]
-                + (
-                    ["-c", package.channel]
-                    if package.channel
-                    else ["-c", "defaults"]
-                )
-                + (["--dry-run"] if dry_run else []),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-            _logger.info(result_conda_download.stdout.decode(encoding))
-            if result_conda_download.returncode != 0:
-                _logger.warning(f"'{package}' is not found.")
-                _logger.error(result_conda_download.stderr.decode(encoding))
-                list_failed_packages.append(package)
-                # 失敗したら次のパッケージへ (コピーできない)
-                continue
 
-        # ある or donwloadに成功したときはコピーする
+        # あるときは、dirpath_pkgsからコピーする
         for filepath_package in tup_filepaths_package:
             if filepath_package.is_file():
-                _logger.info(f"copying {filepath_package.name}")
+                _logger.info(
+                    f"Copying '{filepath_package.name}' from cache..."
+                )
                 if not dry_run:
                     copyfile(
                         filepath_package,
                         dirpath_output_conda / filepath_package.name,
                     )
                 break
+        else:
+            _logger.info(f"{package} is not found in the conda package cache.")
+
+            # ない場合は、直接ダウンロード
+            result_conda_search = subprocess.run(
+                [
+                    os.environ["CONDA_EXE"],
+                    "search",
+                    f"{package.name}={package.version}={package.build}",
+                    "--info",
+                ]
+                + ["-c", package.channel]
+                if package.channel
+                else ["-c", "defaults"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            if match_conda_package_url := re.search(
+                r"url\s*:\s*(https?://\S+\.{})".format(
+                    r"(?:"
+                    + r"|".join(EXTENSIONS_CONDA).replace(r".", r"\.")
+                    + r")"
+                ),
+                result_conda_search.stdout.decode(encoding),
+            ):
+                url = match_conda_package_url.group(1)
+            else:
+                _logger.warning(
+                    "Could not detect the URL of the conda package."
+                )
+                continue
+
+            filename_download_conda = Path(url).name
+            _logger.info(f"Downloading '{filename_download_conda}' from {url}")
+            if not dry_run:
+                try:
+                    _ = urllib.request.urlretrieve(
+                        url, dirpath_output_conda / filename_download_conda
+                    )
+                except urllib.error.HTTPError as httperror:
+                    _logger.exception(repr(httperror))
+                    _logger.warning(
+                        f"'{filename_download_conda}' could not be downloaded from {url}."
+                    )
+                    list_failed_packages.append(package)
 
     n_success = len(list_packages) - len(list_failed_packages)
     n_failed = len(list_failed_packages)
@@ -246,9 +264,9 @@ def packing_packages(
     if n_failed > 0:
         for package in list_failed_packages:
             _logger.warning(f"  {package.name}=={package.version}")
-        _logger.info(
+        _logger.warning(
             "Please check the above packages. "
-            "If you want to install them, please run the following command:"
+            "You can try to download them manually."
         )
 
 

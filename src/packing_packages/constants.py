@@ -5,6 +5,11 @@ It includes constants for file extensions, encoding, and other configuration val
 
 from typing import Literal
 
+__all__ = (
+    "EXTENSIONS_CONDA",
+    "EXTENSIONS_PYPI",
+)
+
 EXTENSIONS_CONDA: tuple[Literal["tar.bz2"], Literal["conda"]] = (
     "tar.bz2",
     "conda",
