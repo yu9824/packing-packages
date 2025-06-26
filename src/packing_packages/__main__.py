@@ -6,6 +6,7 @@ from typing import Optional
 from packing_packages import __version__
 from packing_packages.install.__main__ import add_arguments_install
 from packing_packages.pack.__main__ import add_arguments_pack
+from packing_packages.pack.yaml.__main__ import add_arguments_pack_from_yaml
 
 __all__ = ("main",)
 
@@ -25,6 +26,11 @@ def main(cli_args: Sequence[str], prog: Optional[str] = None) -> None:
         help="pack conda environment",
     )
     add_arguments_pack(parser_pack)
+    subparsers_pack = parser_pack.add_subparsers()
+    parser_pack_yaml = subparsers_pack.add_parser(
+        "yaml", help="pack conda environment from yaml"
+    )
+    add_arguments_pack_from_yaml(parser_pack_yaml)
 
     parser_install = subparsers.add_parser(
         "install",
