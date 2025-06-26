@@ -106,14 +106,12 @@ There are two main methods for installing packages:
 
 ### Packing an Environment Using a `.yaml` File
 
-If you already have an environment file (`.yaml`), you can create and pack the environment on an online machine with the same OS:
+~~If you already have an environment file (`.yaml`), you can create and pack the environment on an online machine with the same OS:~~
+
+Now you can pack them by using the following command even if the different OS;
 
 ```bash
-# On an online machine with the same OS
-conda env create -f=env_name.yml
-conda activate <env_name>
-python3 -m pip install packing-packages
-packing-packages pack -d .
+packing-packages pack yaml /path/to/file.yaml
 ```
 
 ### Using a Proxy (If Required)
