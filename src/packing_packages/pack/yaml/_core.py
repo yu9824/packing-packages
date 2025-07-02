@@ -11,7 +11,7 @@ from typing import Literal, Optional, Union
 from packing_packages.constants import EXTENSIONS_CONDA
 from packing_packages.logging import get_child_logger
 from packing_packages.pack._core import Package
-from packing_packages.pack.yaml.constatns import PLATFORM_MAP
+from packing_packages.pack.yaml.constants import PLATFORM_MAP
 from packing_packages.utils import check_encoding, is_installed
 
 if is_installed("tqdm"):
@@ -25,16 +25,10 @@ else:
 _logger = get_child_logger(__name__)
 
 
-def packing_packages_from_yaml(*args, **kwargs):
-    raise ModuleNotFoundError(
-        "yaml has not found. You need to install pyyaml package."
-    )
-
-
 if is_installed("yaml"):
     import yaml
 
-    def packing_packages_from_yaml(  # type: ignore[misc]
+    def packing_packages_from_yaml(
         filepath_yaml: Union[os.PathLike, str],
         *,
         platform: Optional[
@@ -53,6 +47,54 @@ if is_installed("yaml"):
         dry_run: bool = False,
         encoding: Optional[str] = None,
     ) -> None:
+        """
+        Parses a YAML file describing Python packages and downloads the corresponding
+        packages for the specified platform from PyPI and/or Conda repositories.
+
+        Parameters:
+        ------------
+        filepath_yaml : Union[os.PathLike, str]
+            Path to the YAML file containing package specifications.
+
+        platform : Optional[Literal[
+            "win-64", "win-32", "linux-64", "linux-aarch64",
+            "linux-ppc64le", "linux-s390x", "osx-64", "osx-arm64"
+        ]] (default: None)
+            Target platform for which packages should be downloaded.
+            If None, uses the current platform.
+
+        dirpath_target : Union[os.PathLike, str] (default: ".")
+            Directory path where downloaded package files will be saved.
+
+        dry_run : bool (default: False)
+            If True, no actual downloading is performed. Instead, actions are printed
+            or logged for inspection.
+
+        encoding : Optional[str] (default: None)
+            Encoding used to read the YAML file. If None, system default is used.
+
+        Returns:
+        --------
+        None
+            This function performs downloading as a side effect and does not return a value.
+
+        Raises:
+        -------
+        FileNotFoundError
+            If the specified YAML file does not exist.
+
+        ValueError
+            If the YAML file contains invalid or unsupported content.
+
+        Examples:
+        ---------
+        >>> packing_packages_from_yaml("env.yaml", platform="linux-64", dry_run=True)
+        # Prints or logs the list of packages that would be downloaded for Linux 64-bit.
+
+        >>> packing_packages_from_yaml("env.yaml", dirpath_target="./downloads")
+        # Downloads packages into ./downloads based on the current platform.
+        """
+
         filepath_yaml = Path(filepath_yaml)
         encoding = check_encoding(encoding)
 
@@ -283,6 +325,12 @@ if is_installed("yaml"):
                 "Failed over half of the packages. "
                 "Please check the 'platform' option."
             )
+else:
+
+    def packing_packages_from_yaml(*args, **kwargs):  # type: ignore[misc]
+        raise ModuleNotFoundError(
+            "yaml has not found. You need to install pyyaml package."
+        )
 
 
 if __name__ == "__main__":
