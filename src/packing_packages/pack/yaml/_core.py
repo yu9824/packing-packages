@@ -47,47 +47,27 @@ if is_installed("yaml"):
         dry_run: bool = False,
         encoding: Optional[str] = None,
     ) -> None:
-        """
-        Parses a YAML file describing Python packages and downloads the corresponding
-        packages for the specified platform from PyPI and/or Conda repositories.
+        """Package Python dependencies from a YAML file for a specific platform.
 
-        Parameters:
-        ------------
-        filepath_yaml : Union[os.PathLike, str]
+        Parameters
+        ----------
+        filepath_yaml : str or os.PathLike
             Path to the YAML file containing package specifications.
 
-        platform : Optional[Literal[
-            "win-64", "win-32", "linux-64", "linux-aarch64",
-            "linux-ppc64le", "linux-s390x", "osx-64", "osx-arm64"
-        ]] (default: None)
-            Target platform for which packages should be downloaded.
-            If None, uses the current platform.
+        platform : {"win-64", "win-32", "linux-64", "linux-aarch64", "linux-ppc64le", "linux-s390x", "osx-64", "osx-arm64"}, optional
+            Target platform for which packages should be downloaded. If None, the current platform is used.
 
-        dirpath_target : Union[os.PathLike, str] (default: ".")
-            Directory path where downloaded package files will be saved.
+        dirpath_target : str or os.PathLike, default="."
+            Path to the directory where the downloaded package files will be saved.
 
-        dry_run : bool (default: False)
-            If True, no actual downloading is performed. Instead, actions are printed
-            or logged for inspection.
+        dry_run : bool, default=False
+            If True, simulate the download process without actually downloading any files.
 
-        encoding : Optional[str] (default: None)
-            Encoding used to read the YAML file. If None, system default is used.
+        encoding : str, optional
+            File encoding used to read the YAML file. If None, the system default encoding is used.
 
-        Returns:
+        Examples
         --------
-        None
-            This function performs downloading as a side effect and does not return a value.
-
-        Raises:
-        -------
-        FileNotFoundError
-            If the specified YAML file does not exist.
-
-        ValueError
-            If the YAML file contains invalid or unsupported content.
-
-        Examples:
-        ---------
         >>> packing_packages_from_yaml("env.yaml", platform="linux-64", dry_run=True)
         # Prints or logs the list of packages that would be downloaded for Linux 64-bit.
 
