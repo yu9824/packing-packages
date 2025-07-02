@@ -220,9 +220,11 @@ def packing_packages(
                     f"{package.name}={package.version}={package.build}",
                     "--info",
                 ]
-                + ["-c", package.channel]
-                if package.channel
-                else ["-c", "defaults"],
+                + (
+                    ["-c", package.channel]
+                    if package.channel
+                    else ["-c", "defaults"]
+                ),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
