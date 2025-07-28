@@ -281,8 +281,8 @@ if is_installed("yaml"):
                                 url,
                                 dirpath_output_conda / filename_download_conda,
                             )
-                        except urllib.error.HTTPError as httperror:
-                            _logger.exception(repr(httperror))
+                        except Exception as error:
+                            _logger.exception(repr(error))
                             _logger.warning(
                                 f"'{filename_download_conda}' could not be downloaded from {url}."
                             )
