@@ -2,7 +2,6 @@ import os
 import re
 import subprocess
 import sys
-import urllib.error
 import urllib.request
 from pathlib import Path
 from shutil import copyfile
@@ -108,7 +107,7 @@ if is_installed("yaml"):
         with open(filepath_yaml, "r") as file:
             dict_yaml = yaml.safe_load(file)
 
-        env_name = dict_yaml["name"]
+        env_name = Path(dict_yaml["name"]).name
         channels = dict_yaml["channels"]
 
         dirpath_target = Path(dirpath_target).resolve()
@@ -195,7 +194,7 @@ if is_installed("yaml"):
                             "--python-version",
                             env_python_version,
                             "-d",
-                            dirpath_output_pypi,
+                            str(dirpath_output_pypi),
                         ]
                         + (
                             ["--platform", platform_pypi]
