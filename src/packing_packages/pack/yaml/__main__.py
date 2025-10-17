@@ -15,6 +15,7 @@ def pack_from_yaml(args: argparse.Namespace) -> None:
         args.filepath_yaml,
         platform=args.platform,
         dirpath_target=dirpath_target,
+        diff_only=args.diff_only,
         dry_run=args.dry_run,
         encoding=args.encoding,
     )
@@ -67,6 +68,13 @@ def add_arguments_pack_from_yaml(parser: argparse.ArgumentParser):
         default=None,
         help=(
             "Encoding to use for subprocess execution. If not set, system default is used."
+        ),
+    )
+    parser.add_argument(
+        "--diff-only",
+        action="store_true",
+        help=(
+            "Only download packages that are not already present in the target directory."
         ),
     )
     parser.set_defaults(func=pack_from_yaml)

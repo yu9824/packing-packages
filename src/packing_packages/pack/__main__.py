@@ -22,6 +22,7 @@ def pack(args: argparse.Namespace) -> None:
     packing_packages(
         env_name=env_name,
         dirpath_target=dirpath_target,
+        diff_only=args.diff_only,
         encoding=args.encoding,
         dry_run=args.dry_run,
     )
@@ -61,6 +62,13 @@ def add_arguments_pack(parser: argparse.ArgumentParser):
         default=None,
         help=(
             "Encoding to use for subprocess execution. If not set, system default is used."
+        ),
+    )
+    parser.add_argument(
+        "--diff-only",
+        action="store_true",
+        help=(
+            "Only download packages that are not already present in the target directory."
         ),
     )
     parser.set_defaults(func=pack)

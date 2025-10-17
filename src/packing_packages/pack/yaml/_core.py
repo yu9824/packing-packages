@@ -3,13 +3,18 @@ import re
 import subprocess
 import sys
 import urllib.request
+from datetime import datetime
 from pathlib import Path
 from shutil import copyfile
 from typing import Literal, Optional, Union
 
 from packing_packages.constants import EXTENSIONS_CONDA
 from packing_packages.logging import get_child_logger
-from packing_packages.pack._core import Package
+from packing_packages.pack._core import (
+    Package,
+    get_existing_packages_conda,
+    get_existing_packages_pypi,
+)
 from packing_packages.pack.yaml.constants import PLATFORM_MAP
 from packing_packages.utils import check_encoding, is_installed
 
@@ -43,6 +48,7 @@ if is_installed("yaml"):
             ]
         ] = None,
         dirpath_target: Union[os.PathLike, str] = ".",
+        diff_only: bool = False,
         dry_run: bool = False,
         encoding: Optional[str] = None,
     ) -> None:
@@ -58,6 +64,9 @@ if is_installed("yaml"):
 
         dirpath_target : str or os.PathLike, default="."
             Path to the directory where the downloaded package files will be saved.
+
+        diff_only : bool, default=False
+            If True, only download packages that are not already present in the target directory.
 
         dry_run : bool, default=False
             If True, simulate the download process without actually downloading any files.
@@ -115,8 +124,37 @@ if is_installed("yaml"):
             raise FileNotFoundError(dirpath_target)
 
         dirpath_output = dirpath_target / env_name
+        dirpath_output = dirpath_target / env_name
+        if dirpath_output.is_dir():
+            if diff_only:
+                _logger.info(
+                    f"Output directory '{dirpath_output}' already exists. "
+                    "Only downloading missing packages..."
+                )
+
+                st_existing_conda = get_existing_packages_conda(dirpath_output)
+                st_existing_pypi = get_existing_packages_pypi(dirpath_output)
+
+                # Update dirpath_output to diff directory
+                dirpath_output = (
+                    dirpath_output
+                    / "diffs"
+                    / datetime.now().strftime("%Y%m%d_%H%M")
+                )
+                dirpath_output.mkdir(parents=True)
+            else:
+                _logger.warning(
+                    f"Output directory '{dirpath_output}' already exists. "
+                    "We will add files to this directory. "
+                    "If you want to add only missing packages, set 'diff_only=True'."
+                )
+
+                st_existing_conda = set()
+                st_existing_pypi = set()
+
         if not dry_run:
             os.makedirs(dirpath_output, exist_ok=True)
+
         _logger.info(f"Packing to '{dirpath_output}'...")
 
         dirpath_output_pypi = dirpath_output / "pypi"
@@ -159,6 +197,12 @@ if is_installed("yaml"):
         list_failed_packages: list[Package] = []
         for package in tqdm(list_packages):
             if package.channel == "pypi":
+                if (package.name, package.version) in st_existing_pypi:
+                    _logger.info(
+                        f"'{package.name}=={package.version}' is already downloaded. Skipping..."
+                    )
+                    continue
+
                 if dry_run:
                     result_pip_download = subprocess.run(
                         [
@@ -213,6 +257,12 @@ if is_installed("yaml"):
                     list_failed_packages.append(package)
             else:
                 # conda
+                if package[:3] in st_existing_conda:
+                    _logger.info(
+                        f"'{package.name}-{package.version}-{package.build}' is already downloaded. Skipping..."
+                    )
+                    continue
+
                 tup_filepaths_package = tuple(
                     dirpath_pkgs
                     / f"{package.name}-{package.version}-{package.build}.{ext}"

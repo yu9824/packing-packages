@@ -2,13 +2,13 @@ import os
 import re
 import subprocess
 import sys
-import urllib.error
 import urllib.request
+from datetime import datetime
 from pathlib import Path
 from shutil import copyfile
 from typing import NamedTuple, Optional, Union
 
-from packing_packages.constants import EXTENSIONS_CONDA
+from packing_packages.constants import EXTENSIONS_CONDA, EXTENSIONS_PYPI
 from packing_packages.logging import get_child_logger
 from packing_packages.utils import check_encoding, is_installed
 
@@ -21,10 +21,94 @@ else:
 
 
 class Package(NamedTuple):
+    """
+
+    Parameters
+    ----------
+    name : str
+        package name
+    version : str
+        package version
+    build : str
+        package build string
+    channel : str
+        package channel
+
+    """
+
     name: str
     version: str
     build: str
     channel: str
+
+
+def get_existing_packages_conda(
+    dirpath_output: Union[os.PathLike, str],
+) -> set[tuple[str, str, str]]:
+    """get existing conda packages in the output directory
+
+    Parameters
+    ----------
+    dirpath_output : str
+        output directory path
+
+    Returns
+    -------
+    set[tuple[str, str, str]]
+        set of existing conda packages (name, version, build)
+    """
+    dirpath_output = Path(dirpath_output).resolve()
+
+    st_packages_conda: set[tuple[str, str, str]] = set()
+    for ext in EXTENSIONS_CONDA:
+        for filepath_conda in dirpath_output.glob(f"**/*.{ext}"):
+            if match := (
+                re.match(rf"(.+)-(\d+.+?)-(.+)\.{ext}$", filepath_conda.name)
+            ):
+                package = Package(
+                    name=match.group(1),
+                    version=match.group(2),
+                    build=match.group(3),
+                    channel="",
+                )
+                st_packages_conda.add(package[:3])
+    return st_packages_conda
+
+
+def get_existing_packages_pypi(
+    dirpath_output: Union[os.PathLike, str],
+) -> set[tuple[str, str]]:
+    """get existing pypi packages in the output directory
+
+    Parameters
+    ----------
+    dirpath_output : str
+        output directory path
+
+    Returns
+    -------
+    set[tuple[str, str]]
+        set of existing pypi packages (name, version)
+    """
+    dirpath_output = Path(dirpath_output).resolve()
+
+    st_packages_pypi: set[tuple[str, str]] = set()
+    for ext in EXTENSIONS_PYPI:
+        for filepath_pypi in dirpath_output.glob(f"**/*.{ext}"):
+            if match := re.match(
+                rf"(.+)-(\d+.+?)-.+\.{ext}$", filepath_pypi.name
+            ):
+                package = Package(
+                    name=match.group(1),
+                    version=match.group(2),
+                    build="",
+                    channel="pypi",
+                )
+                st_packages_pypi.add((package.name, package.version))
+                st_packages_pypi.add(
+                    (package.name.replace("_", "-"), package.version)
+                )
+    return st_packages_pypi
 
 
 _logger = get_child_logger(__name__)
@@ -33,6 +117,7 @@ _logger = get_child_logger(__name__)
 def packing_packages(
     env_name: Optional[str] = None,
     dirpath_target: Union[os.PathLike, str] = ".",
+    diff_only: bool = False,
     encoding: Optional[str] = None,
     dry_run: bool = False,
 ) -> None:
@@ -44,6 +129,10 @@ def packing_packages(
         conda environment name
     dirpath_target : str
         target directory path
+    diff_only : bool
+        if True, only download packages that are not already downloaded
+    encoding : str
+        encoding for subprocess output
     dry_run : bool
         if True, do not download files
     """
@@ -92,7 +181,34 @@ def packing_packages(
     if not dirpath_target.is_dir():
         raise FileNotFoundError(dirpath_target)
 
-    dirpath_output = dirpath_target / Path(env_name).name
+    dirpath_output = dirpath_target / env_name
+    if dirpath_output.is_dir():
+        if diff_only:
+            _logger.info(
+                f"Output directory '{dirpath_output}' already exists. "
+                "Only downloading missing packages..."
+            )
+
+            st_existing_conda = get_existing_packages_conda(dirpath_output)
+            st_existing_pypi = get_existing_packages_pypi(dirpath_output)
+
+            # Update dirpath_output to diff directory
+            dirpath_output = (
+                dirpath_output
+                / "diffs"
+                / datetime.now().strftime("%Y%m%d_%H%M")
+            )
+            dirpath_output.mkdir(parents=True)
+        else:
+            _logger.warning(
+                f"Output directory '{dirpath_output}' already exists. "
+                "We will add files to this directory. "
+                "If you want to add only missing packages, set 'diff_only=True'."
+            )
+
+            st_existing_conda = set()
+            st_existing_pypi = set()
+
     if not dry_run:
         os.makedirs(dirpath_output, exist_ok=True)
 
@@ -145,6 +261,12 @@ def packing_packages(
     for package in tqdm(list_packages):
         # pypiの場合はダウンロードする
         if package.channel == "pypi":
+            if (package.name, package.version) in st_existing_pypi:
+                _logger.info(
+                    f"'{package.name}=={package.version}' is already downloaded. Skipping..."
+                )
+                continue
+
             if dry_run:
                 result_pip_download = subprocess.run(
                     [
@@ -191,6 +313,12 @@ def packing_packages(
             continue
 
         # conda
+        if package[:3] in st_existing_conda:
+            _logger.info(
+                f"'{package.name}-{package.version}-{package.build}' is already downloaded. Skipping..."
+            )
+            continue
+
         tup_filepaths_package = tuple(
             dirpath_pkgs
             / f"{package.name}-{package.version}-{package.build}.{ext}"
