@@ -151,6 +151,9 @@ if is_installed("yaml"):
 
                 st_existing_conda = set()
                 st_existing_pypi = set()
+        else:
+            st_existing_conda = set()
+            st_existing_pypi = set()
 
         if not dry_run:
             os.makedirs(dirpath_output, exist_ok=True)
