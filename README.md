@@ -15,9 +15,9 @@
 <!-- [![Conda Version](https://img.shields.io/conda/vn/conda-forge/packing-packages.svg)](https://anaconda.org/conda-forge/packing-packages)
 [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/packing-packages.svg)](https://anaconda.org/conda-forge/packing-packages) -->
 
-This module provides functionality to pack conda environments and their dependencies into a specified directory.
+This tool packs a conda environment and all its dependencies into a directory.
 
-You can use this package to migrate a conda environment to another offline machine with the same operating system.
+You can migrate the packed environment to another offline machine with the same operating system.
 
 
 ## Install
@@ -30,7 +30,14 @@ pip install packing-packages
 
 ## How to use
 
-see `--help`.
+See help for available commands and options:
+
+```bash
+packing-packages --help
+packing-packages pack --help
+packing-packages install --help
+
+```
 
 ### Pack
 
@@ -45,6 +52,32 @@ packing-packages pack -d .
 packing-packages install .
 
 ```
+
+### Generate install scripts (instead of installing directly)
+
+Use `--generate-scripts` to create reusable install scripts that do not depend on this package. These scripts can be copied and executed on another machine (offline), and work across platforms (Windows batch and Unix/Linux shell).
+
+```bash
+# Generate scripts in the package directory (default)
+packing-packages install . --generate-scripts
+
+# Specify environment name and output directory explicitly
+packing-packages install /path/to/packages \
+  --generate-scripts \
+  --env-name myenv \
+  --output-dir /path/to/output
+
+```
+
+Generated files:
+
+- install_packages.bat (Windows)
+- install_packages.sh (Unix/Linux)
+
+Notes:
+
+- If `--env-name` is omitted with `--generate-scripts`, the environment name defaults to the package directory name.
+- If `--output-dir` is omitted, scripts are written to the package directory.
 
 ## Example
 
@@ -67,11 +100,21 @@ python -m pip install --no-deps --no-build-isolation ./pypi/*
 
 ```
 
+Alternatively, if you generated install scripts on the source device:
+
+```bash
+# Windows
+install_packages.bat
+
+# Unix/Linux
+./install_packages.sh
+```
+
 ## Notes
 
 ### Installing PyTorch from a Non-PyPI Source
 
-If you want to use pip to download packages from a source other than PyPI (e.g., the official PyTorch index), standard methods may not complete successfully. Some packages may fail to download and must be handled manually. This process is complex, and automated support is not currently provided.
+If you need to download packages from a source other than PyPI (e.g., the official PyTorch index), standard methods may not complete successfully. Some packages may fail to download and require manual handling. Automated support is not currently provided for that case.
 
 ```bash
 # Installation command
@@ -85,7 +128,7 @@ pip download torch==2.5.1 --index-url https://download.pytorch.org/whl/cu124 --n
 
 ### Handling Installation Failures with `--use-pep517`
 
-Some older packages may not install successfully using `pip install`. In such cases, you may be able to install them manually using the `--use-pep517` option:
+Some older packages may not install successfully using `pip install`. In such cases, installing with the `--use-pep517` option may help:
 
 ```bash
 pip install <package-name> --use-pep517
@@ -101,14 +144,14 @@ There are two main methods for installing packages:
 | Command                         | Advantages                             | Disadvantages                |
 | ------------------------------- | -------------------------------------- | ---------------------------- |
 | `conda install` / `pip install` | Fast execution                         | Stops immediately upon error |
-| `packing-packages install`      | Skips failed packages and reports them | Slower installation process  |
+| `packing-packages install`      | Skips failed packages and reports them | Slower overall process       |
 
 
 ### Packing an Environment Using a `.yaml` File
 
 ~~If you already have an environment file (`.yaml`), you can create and pack the environment on an online machine with the same OS:~~
 
-Now you can pack them by using the following command even if the different OS;
+You can now pack from a YAML file even on a different OS using the following command:
 
 ```bash
 packing-packages pack yaml /path/to/file.yaml
