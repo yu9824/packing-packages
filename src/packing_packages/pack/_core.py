@@ -283,6 +283,7 @@ def packing_packages(
                         "--python-version",
                         f"{env_python_version}",
                         "--dry-run",
+                        "--force-reinstall",
                         "--target",
                         dirpath_output_pypi.as_posix(),
                     ],
