@@ -322,6 +322,7 @@ if is_installed("yaml"):
                         _logger.warning(
                             "Could not detect the URL of the conda package."
                         )
+                        list_failed_packages.append(package)
                         continue
 
                     filename_download_conda = Path(url).name
