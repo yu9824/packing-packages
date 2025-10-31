@@ -24,7 +24,6 @@ jobs:
     - name: Setup Miniforge
       uses: conda-incubator/setup-miniconda@v2
       with:
-        miniforge-variant: Miniforge
         miniforge-version: latest
         python-version: ${{ matrix.python-version }}
         auto-activate-base: false
