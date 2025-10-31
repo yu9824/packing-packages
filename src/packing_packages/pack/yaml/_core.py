@@ -219,6 +219,7 @@ if is_installed("yaml"):
                             "--python-version",
                             env_python_version,
                             "--dry-run",
+                            "--force-reinstall",
                         ]
                         + (
                             ["--platform", platform_pypi]
