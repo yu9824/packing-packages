@@ -1,19 +1,16 @@
 import os
-import re
-import subprocess
-import sys
-import urllib.request
-from datetime import datetime
 from pathlib import Path
-from shutil import copyfile
 from typing import Literal, Optional, Union
 
-from packing_packages.constants import EXTENSIONS_CONDA
 from packing_packages.logging import get_child_logger
-from packing_packages.pack._core import (
-    Package,
-    get_existing_packages_conda,
-    get_existing_packages_pypi,
+from packing_packages.pack._core import Package
+from packing_packages.pack._utils import (
+    check_conda_installation,
+    check_python_version,
+    download_conda_package,
+    download_pypi_package,
+    log_packing_results,
+    prepare_output_directory,
 )
 from packing_packages.pack.yaml.constants import PLATFORM_MAP
 from packing_packages.utils import check_encoding, is_installed
@@ -100,16 +97,7 @@ if is_installed("yaml"):
             platform_conda = PLATFORM_MAP[platform]["conda"]
             platform_pypi = PLATFORM_MAP[platform]["pypi"]
 
-        # check install conda
-        if "CONDA_EXE" not in os.environ:
-            raise ValueError(
-                "Please install conda and set the CONDA_EXE environment variable."
-            )
-
-        DIRPATH_CONDA_ROOT = Path(
-            os.environ["CONDA_EXE"]
-        ).parent.parent.resolve()
-        dirpath_pkgs = DIRPATH_CONDA_ROOT / "pkgs"
+        dirpath_pkgs = check_conda_installation()
 
         if not filepath_yaml.is_file():
             raise FileNotFoundError(filepath_yaml)
@@ -119,52 +107,17 @@ if is_installed("yaml"):
         env_name = Path(dict_yaml["name"]).name
         channels = dict_yaml["channels"]
 
-        dirpath_target = Path(dirpath_target).resolve()
-        if not dirpath_target.is_dir():
-            raise FileNotFoundError(dirpath_target)
-
-        dirpath_output = dirpath_target / env_name
-        dirpath_output = dirpath_target / env_name
-        if dirpath_output.is_dir():
-            if diff_only:
-                _logger.info(
-                    f"Output directory '{dirpath_output}' already exists. "
-                    "Only downloading missing packages..."
-                )
-
-                st_existing_conda = get_existing_packages_conda(dirpath_output)
-                st_existing_pypi = get_existing_packages_pypi(dirpath_output)
-
-                # Update dirpath_output to diff directory
-                dirpath_output = (
-                    dirpath_output
-                    / "diffs"
-                    / datetime.now().strftime("%Y%m%d_%H%M")
-                )
-                dirpath_output.mkdir(parents=True)
-            else:
-                _logger.warning(
-                    f"Output directory '{dirpath_output}' already exists. "
-                    "We will add files to this directory. "
-                    "If you want to add only missing packages, set 'diff_only=True'."
-                )
-
-                st_existing_conda = set()
-                st_existing_pypi = set()
-        else:
-            st_existing_conda = set()
-            st_existing_pypi = set()
-
-        if not dry_run:
-            os.makedirs(dirpath_output, exist_ok=True)
-
-        _logger.info(f"Packing to '{dirpath_output}'...")
+        dirpath_output, st_existing_conda, st_existing_pypi = (
+            prepare_output_directory(
+                Path(dirpath_target),
+                env_name,
+                diff_only,
+                dry_run,
+            )
+        )
 
         dirpath_output_pypi = dirpath_output / "pypi"
         dirpath_output_conda = dirpath_output / "conda"
-        for _dirpath in (dirpath_output_pypi, dirpath_output_conda):
-            if not dry_run:
-                os.makedirs(_dirpath, exist_ok=True)
 
         env_python_version: Optional[str] = None
         list_packages: list[Package] = list()
@@ -187,15 +140,7 @@ if is_installed("yaml"):
 
         assert env_python_version is not None, "Python has not found."
 
-        # conda listで取得したpythonのバージョンと、現在のpythonのバージョンが異なる場合は警告を出す
-        if (
-            tuple(map(int, env_python_version.split(".")[:2]))
-            != sys.version_info[:2]
-        ):
-            _logger.warning(
-                "The Python version of the conda environment and the current Python version do not match. "
-                "It is recommended to use the same Python version."
-            )
+        check_python_version(env_python_version)
 
         list_failed_packages: list[Package] = []
         for package in tqdm(list_packages):
@@ -206,58 +151,14 @@ if is_installed("yaml"):
                     )
                     continue
 
-                if dry_run:
-                    result_pip_download = subprocess.run(
-                        [
-                            sys.executable,
-                            "-m",
-                            "pip",
-                            "install",
-                            f"{package.name}=={package.version}",
-                            "--no-deps",
-                            "--no-build-isolation",
-                            "--python-version",
-                            env_python_version,
-                            "--dry-run",
-                            "--force-reinstall",
-                        ]
-                        + (
-                            ["--platform", platform_pypi]
-                            if platform_pypi
-                            else []
-                        ),
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE,
-                    )
-                else:
-                    result_pip_download = subprocess.run(
-                        [
-                            sys.executable,
-                            "-m",
-                            "pip",
-                            "download",
-                            f"{package.name}=={package.version}",
-                            "--no-deps",
-                            "--no-build-isolation",
-                            "--python-version",
-                            env_python_version,
-                            "-d",
-                            str(dirpath_output_pypi),
-                        ]
-                        + (
-                            ["--platform", platform_pypi]
-                            if platform_pypi
-                            else []
-                        ),
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE,
-                    )
-                _logger.info(
-                    "\n" + result_pip_download.stdout.decode(encoding)
-                )
-                if result_pip_download.returncode != 0:
-                    _logger.warning(f"'{package}' is not found.")
-                    _logger.error(result_pip_download.stderr.decode(encoding))
+                if not download_pypi_package(
+                    package,
+                    dirpath_output_pypi,
+                    env_python_version,
+                    encoding,
+                    dry_run,
+                    platform_pypi,
+                ):
                     list_failed_packages.append(package)
             else:
                 # conda
@@ -267,93 +168,19 @@ if is_installed("yaml"):
                     )
                     continue
 
-                tup_filepaths_package = tuple(
-                    dirpath_pkgs
-                    / f"{package.name}-{package.version}-{package.build}.{ext}"
-                    for ext in EXTENSIONS_CONDA
-                )
+                if not download_conda_package(
+                    package,
+                    dirpath_pkgs,
+                    dirpath_output_conda,
+                    encoding,
+                    dry_run,
+                    platform_conda,
+                    channels,
+                ):
+                    list_failed_packages.append(package)
 
-                # あるときは、dirpath_pkgsからコピーする
-                for filepath_package in tup_filepaths_package:
-                    if filepath_package.is_file():
-                        _logger.info(
-                            f"Copying '{filepath_package.name}' from cache..."
-                        )
-                        if not dry_run:
-                            copyfile(
-                                filepath_package,
-                                dirpath_output_conda / filepath_package.name,
-                            )
-                        break
-                else:
-                    _logger.info(
-                        f"{package} is not found in the conda package cache."
-                    )
-
-                    # ない場合は、直接ダウンロード
-                    result_conda_search = subprocess.run(
-                        [
-                            os.environ["CONDA_EXE"],
-                            "search",
-                            f"{package.name}={package.version}={package.build}",
-                            "--info",
-                        ]
-                        + (
-                            ["--platform", platform_conda]
-                            if platform_conda
-                            else []
-                        )
-                        + sum(
-                            [["-c", channel] for channel in channels], start=[]
-                        ),
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE,
-                    )
-                    if match_conda_package_url := re.search(
-                        r"url\s*:\s*(https?://\S+\.{})".format(
-                            r"(?:"
-                            + r"|".join(EXTENSIONS_CONDA).replace(r".", r"\.")
-                            + r")"
-                        ),
-                        result_conda_search.stdout.decode(encoding),
-                    ):
-                        url = match_conda_package_url.group(1)
-                    else:
-                        _logger.warning(
-                            "Could not detect the URL of the conda package."
-                        )
-                        list_failed_packages.append(package)
-                        continue
-
-                    filename_download_conda = Path(url).name
-                    _logger.info(
-                        f"Downloading '{filename_download_conda}' from {url}"
-                    )
-                    if not dry_run:
-                        try:
-                            _ = urllib.request.urlretrieve(
-                                url,
-                                dirpath_output_conda / filename_download_conda,
-                            )
-                        except Exception as error:
-                            _logger.exception(repr(error))
-                            _logger.warning(
-                                f"'{filename_download_conda}' could not be downloaded from {url}."
-                            )
-                            list_failed_packages.append(package)
-        n_success = len(list_packages) - len(list_failed_packages)
-        n_failed = len(list_failed_packages)
-        _logger.info(
-            f"{n_success} / {(n_success + n_failed)} packages are success!"
-        )
-
-        if n_failed > 0:
-            for package in list_failed_packages:
-                _logger.warning(f"  {package.name}=={package.version}")
-            _logger.warning(
-                "Please check the above packages. "
-                "You can try to download them manually."
-            )
+        _, n_failed = log_packing_results(list_packages, list_failed_packages)
+        n_success = len(list_packages) - n_failed
         if n_failed > n_success:
             _logger.warning(
                 "Failed over half of the packages. "
