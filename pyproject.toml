@@ -1,6 +1,6 @@
 # https://packaging.python.org/ja/latest/guides/writing-pyproject-toml/
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=77.0.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -22,14 +22,20 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
-    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.14",
 ] # https://pypi.org/classifiers/
 
 [project.optional-dependencies]
 test = ["pytest"]
 dev = ["build"]
 optional = ["colorlog", "tqdm", "PyYAML"]
-docs = ["sphinx", "sphinx_rtd_theme", "sphinx-markdown-tables", "recommonmark"]
+docs = [
+    "sphinx",
+    "myst-parser",
+    "myst-nb",
+    "sphinx-book-theme",
+    "jupyter-sphinx",
+]
 gui = ["TkEasyGUI"]
 
 [project.urls]
