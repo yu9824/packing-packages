@@ -3,8 +3,8 @@ import subprocess
 from pathlib import Path
 from typing import Optional, Union
 
+from packing_packages.helpers import check_encoding, is_installed
 from packing_packages.logging import get_child_logger
-from packing_packages.utils import check_encoding, is_installed
 
 from ._types import (
     Package,
@@ -23,17 +23,17 @@ from ._utils import (
 if is_installed("tqdm"):
     from tqdm.auto import tqdm
 else:
-    from packing_packages.utils import (  # type: ignore[assignment]
+    from packing_packages.helpers import (  # type: ignore[assignment]
         dummy_tqdm as tqdm,
     )
 
 # Re-export for backward compatibility
-__all__ = [
+__all__ = (
     "Package",
     "get_existing_packages_conda",
     "get_existing_packages_pypi",
     "packing_packages",
-]
+)
 
 
 _logger = get_child_logger(__name__)

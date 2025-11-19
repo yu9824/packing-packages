@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from typing import Literal, Optional, Union
 
+from packing_packages.helpers import check_encoding, is_installed
 from packing_packages.logging import get_child_logger
 from packing_packages.pack._core import Package
 from packing_packages.pack._utils import (
@@ -13,12 +14,11 @@ from packing_packages.pack._utils import (
     prepare_output_directory,
 )
 from packing_packages.pack.yaml.constants import PLATFORM_MAP
-from packing_packages.utils import check_encoding, is_installed
 
 if is_installed("tqdm"):
     from tqdm.auto import tqdm
 else:
-    from packing_packages.utils import (  # type: ignore[assignment]
+    from packing_packages.helpers import (  # type: ignore[assignment]
         dummy_tqdm as tqdm,
     )
 

@@ -7,12 +7,12 @@ from packing_packages.constants import (
     EXTENSIONS_CONDA,
     EXTENSIONS_PYPI,
 )
-from packing_packages.utils import check_encoding, is_installed
+from packing_packages.helpers import check_encoding, is_installed
 
 if is_installed("tqdm"):
     from tqdm import tqdm
 else:
-    from packing_packages.utils import (  # type: ignore[assignment]
+    from packing_packages.helpers import (  # type: ignore[assignment]
         dummy_tqdm as tqdm,
     )
 
