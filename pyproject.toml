@@ -12,7 +12,8 @@ authors = [{ name = "yu9824" }]
 maintainers = [{ name = "yu9824" }]
 description = "This module provides functionality to pack conda environments and their dependencies into a specified directory."
 readme = { file = "README.md", content-type = "text/markdown" }
-license = { file = "LICENSE" }
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
 keywords = ["anaconda", "conda"]
 # https://pypi.org/classifiers/
 classifiers = [
