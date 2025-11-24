@@ -15,6 +15,8 @@
 <!-- [![Conda Version](https://img.shields.io/conda/vn/conda-forge/packing-packages.svg)](https://anaconda.org/conda-forge/packing-packages)
 [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/packing-packages.svg)](https://anaconda.org/conda-forge/packing-packages) -->
 
+![logo](https://github.com/yu9824/packing-packages/blob/main/docs_src/_static/site_logo.png?raw=true)
+
 This tool packs a conda environment and all its dependencies into a directory.
 
 You can migrate the packed environment to another offline machine with the same operating system.
