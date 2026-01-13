@@ -3,7 +3,11 @@ import subprocess
 from pathlib import Path
 from typing import Optional, Union
 
-from packing_packages.helpers import check_encoding, is_installed
+from packing_packages.helpers import (
+    check_encoding,
+    check_env_name,
+    is_installed,
+)
 from packing_packages.logging import get_child_logger
 
 from ._types import (
@@ -21,7 +25,7 @@ from ._utils import (
 )
 
 if is_installed("tqdm"):
-    from tqdm.auto import tqdm
+    from tqdm.auto import tqdm  # type: ignore
 else:
     from packing_packages.helpers import (  # type: ignore[assignment]
         dummy_tqdm as tqdm,
@@ -69,30 +73,8 @@ def packing_packages(
 
     dirpath_pkgs = check_conda_installation()
 
-    if env_name is None:
-        env_name = os.environ["CONDA_DEFAULT_ENV"]
-    else:
-        # check environment name
-        result_conda_env_list = subprocess.run(
-            [
-                os.environ["CONDA_EXE"],
-                "info",
-                "-e",
-            ],
-            stdout=subprocess.PIPE,
-        )
-        conda_env_list = result_conda_env_list.stdout.decode(
-            encoding
-        ).splitlines()
-        env_name_list = {
-            line.split()[0]
-            for line in conda_env_list
-            if line and line[0] != "#"
-        }
-        if env_name not in env_name_list:
-            raise ValueError(
-                f"'{env_name}' is not found. Please check the environment name."
-            )
+    env_name = check_env_name(env_name, encoding=encoding)
+
     _logger.info(f"Packing conda environment '{env_name}'...")
 
     dirpath_output, st_existing_conda, st_existing_pypi = (

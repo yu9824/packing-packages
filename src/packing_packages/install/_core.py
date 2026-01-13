@@ -1,24 +1,74 @@
 import os
 import subprocess
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Optional, Union
 
 from packing_packages.constants import (
     EXTENSIONS_CONDA,
     EXTENSIONS_PYPI,
 )
-from packing_packages.helpers import check_encoding, is_installed
+from packing_packages.helpers import (
+    check_encoding,
+    check_env_name,
+    is_installed,
+)
+from packing_packages.logging import get_child_logger
 
 if is_installed("tqdm"):
-    from tqdm import tqdm
+    from tqdm.auto import tqdm  # type: ignore
 else:
     from packing_packages.helpers import (  # type: ignore[assignment]
         dummy_tqdm as tqdm,
     )
 
-from packing_packages.logging import get_child_logger
 
 _logger = get_child_logger(__name__)
+
+
+def _get_conda_packages_path(
+    dirpath_packages: Union[os.PathLike, str] = ".",
+) -> tuple[Path, ...]:
+    dirpath_packages = Path(dirpath_packages)
+
+    return tuple(
+        sum(
+            [
+                [
+                    filepath
+                    for filepath in dirpath_packages.glob(f"**/*{ext}")
+                    if filepath.is_file()
+                ]
+                for ext in EXTENSIONS_CONDA
+            ],
+            start=[],
+        )
+    )
+
+
+def _get_pypi_packages_path(
+    dirpath_packages: Union[os.PathLike, str] = ".",
+) -> tuple[Path, ...]:
+    dirpath_packages = Path(dirpath_packages)
+
+    return tuple(
+        sum(
+            [
+                [
+                    filepath
+                    for filepath in dirpath_packages.glob(f"**/*{ext}")
+                    if filepath.is_file()
+                ]
+                for ext in EXTENSIONS_PYPI
+            ],
+            start=[],
+        )
+    )
+
+
+def _is_python_package(filepath: Path) -> bool:
+    """Check if the package is a python package."""
+    name_lower = filepath.name.lower()
+    return name_lower.startswith("python-") or name_lower.startswith("python_")
 
 
 def install_packages(
@@ -36,29 +86,7 @@ def install_packages(
         directory path of packages
     """
     encoding = check_encoding(encoding)
-
-    if env_name is None:
-        env_name = os.environ["CONDA_DEFAULT_ENV"]
-    else:
-        # check environment name
-        result_conda_env_list = subprocess.run(
-            [
-                os.environ["CONDA_EXE"],
-                "info",
-                "-e",
-            ],
-            stdout=subprocess.PIPE,
-        )
-        conda_env_list = result_conda_env_list.stdout.decode(
-            encoding
-        ).splitlines()
-        env_name_list = {
-            line.split()[0]
-            for line in conda_env_list
-            if line and line[0] != "#"
-        }
-        if env_name not in env_name_list:
-            raise ValueError(f"Environment '{env_name}' not found.")
+    env_name = check_env_name(env_name, encoding)
 
     _logger.info(
         f"Installing packages from '{dirpath_packages}' into '{env_name}'"
@@ -66,46 +94,21 @@ def install_packages(
 
     dirpath_packages = Path(dirpath_packages).resolve()
 
-    list_filepaths_conda: list[Path] = sum(
-        [
-            [
-                filepath
-                for filepath in dirpath_packages.glob(f"**/*{ext}")
-                if filepath.is_file()
-            ]
-            for ext in EXTENSIONS_CONDA
-        ],
-        start=[],
-    )
-    list_filepaths_pypi: list[Path] = sum(
-        [
-            [
-                filepath
-                for filepath in dirpath_packages.glob(f"**/*{ext}")
-                if filepath.is_file()
-            ]
-            for ext in EXTENSIONS_PYPI
-        ],
-        start=[],
-    )
+    tup_filepaths_conda = _get_conda_packages_path(dirpath_packages)
+    tup_filepaths_pypi = _get_pypi_packages_path(dirpath_packages)
 
     # Sort conda packages: python packages first
-    def is_python_package(filepath: Path) -> bool:
-        """Check if the package is a python package."""
-        name_lower = filepath.name.lower()
-        return name_lower.startswith("python-") or name_lower.startswith(
-            "python_"
+    tup_filepaths_conda = tuple(
+        sorted(
+            tup_filepaths_conda,
+            key=lambda p: (not _is_python_package(p), p.name),
         )
-
-    list_filepaths_conda = sorted(
-        list_filepaths_conda,
-        key=lambda p: (not is_python_package(p), p.name),
     )
 
     list_filepaths_conda_failed: list[Path] = []
     # install conda packages
     for filepath_conda in tqdm(
-        list_filepaths_conda,
+        tup_filepaths_conda,
         desc="Installing conda packages",
         unit="package",
     ):
@@ -134,7 +137,7 @@ def install_packages(
     # install pypi packages
     list_filepaths_pypi_failed: list[Path] = []
     for filepath_pypi in tqdm(
-        list_filepaths_pypi,
+        tup_filepaths_pypi,
         desc="Installing PyPI packages",
         unit="package",
     ):
@@ -177,7 +180,7 @@ def install_packages(
         _logger.info("All PyPI packages installed successfully.")
 
     _logger.info(
-        f"Installed {len(list_filepaths_conda) + len(list_filepaths_pypi)} packages."
+        f"Installed {len(tup_filepaths_conda) + len(tup_filepaths_pypi)} packages."
     )
     _logger.info(
         f"Failed to install {len(list_filepaths_conda_failed) + len(list_filepaths_pypi_failed)} packages."
@@ -194,6 +197,7 @@ def generate_install_scripts(
     dirpath_packages: Union[str, os.PathLike] = ".",
     env_name: Optional[str] = None,
     output_dir: Optional[Union[str, os.PathLike]] = None,
+    encoding: Optional[str] = None,
 ) -> dict[str, Path]:
     """Generate install scripts for Windows and Unix/Linux.
 
@@ -223,8 +227,15 @@ def generate_install_scripts(
             f"Package directory not found: {dirpath_packages}"
         )
 
+    encoding = check_encoding(encoding)
     if env_name is None:
-        env_name = dirpath_packages.name
+        env_name = check_env_name(env_name, encoding=encoding)
+        _logger.warning(
+            "You should specify the 'environment'. "
+            f"'{env_name}' is automatically assigned because No environment is specified."
+        )
+    else:
+        env_name = check_env_name(env_name, encoding=encoding)
 
     if output_dir is None:
         output_dir = dirpath_packages
@@ -233,53 +244,16 @@ def generate_install_scripts(
         output_dir.mkdir(parents=True, exist_ok=True)
 
     # Find package files
-    list_filepaths_conda: list[Path] = sum(
-        [
-            [
-                filepath
-                for filepath in dirpath_packages.glob(f"**/*{ext}")
-                if filepath.is_file()
-            ]
-            for ext in EXTENSIONS_CONDA
-        ],
-        start=[],
-    )
-    list_filepaths_pypi: list[Path] = sum(
-        [
-            [
-                filepath
-                for filepath in dirpath_packages.glob(f"**/*{ext}")
-                if filepath.is_file()
-            ]
-            for ext in EXTENSIONS_PYPI
-        ],
-        start=[],
-    )
+    tup_filepaths_conda = _get_conda_packages_path(dirpath_packages)
+    tup_filepaths_pypi = _get_pypi_packages_path(dirpath_packages)
 
     # Sort conda packages: python packages first
-    def is_python_package(filepath: Path) -> bool:
-        """Check if the package is a python package."""
-        name_lower = filepath.name.lower()
-        return name_lower.startswith("python-") or name_lower.startswith(
-            "python_"
+    tup_filepaths_conda_sorted = tuple(
+        sorted(
+            tup_filepaths_conda,
+            key=lambda p: (not _is_python_package(p), p.name),
         )
-
-    list_filepaths_conda_sorted = sorted(
-        list_filepaths_conda,
-        key=lambda p: (not is_python_package(p), p.name),
     )
-
-    # Calculate relative paths from script location (output_dir) to packages
-    def get_relative_path(filepath: Path) -> str:
-        """Get relative path from output_dir to filepath using pathlib only."""
-        output_dir_resolved = Path(output_dir).resolve()
-        filepath_resolved = Path(filepath).resolve()
-        try:
-            rel_path = filepath_resolved.relative_to(output_dir_resolved)
-            return rel_path.as_posix()
-        except ValueError:
-            # Fallback to absolute path if not under output_dir
-            return filepath_resolved.as_posix()
 
     # Generate Windows batch file (.bat)
     bat_content = [
@@ -292,33 +266,66 @@ def generate_install_scripts(
         'if "!SCRIPT_DIR:~-1!"=="\\" set "SCRIPT_DIR=!SCRIPT_DIR:~0,-1!"',
         'cd /d "!SCRIPT_DIR!"',
         "",
+        f"set env_name={env_name}",
+        "",
+        "REM Create new conda environment.",
+        "call conda create -y -n %env_name% --offline",
+        "",
     ]
-    if list_filepaths_conda_sorted:
+    if tup_filepaths_conda_sorted:
         bat_content.append("REM Install conda packages")
-        for filepath in list_filepaths_conda_sorted:
-            rel_path = get_relative_path(filepath)
-            # Use backslashes for Windows batch file
-            rel_path_windows = rel_path.replace("/", "\\")
-            # Ensure backslash between SCRIPT_DIR and path
-            bat_content.append(
-                f'call conda install -y -n {env_name} --offline --use-local "!SCRIPT_DIR!\\{rel_path_windows}"'
+        bat_content.append(
+            " ".join(
+                [
+                    "call",
+                    "conda",
+                    "install",
+                    "-y",
+                    "-n",
+                    "%env_name%",
+                    "--offline",
+                    "--use-local",
+                ]
+                + [
+                    '^\n    "!SCRIPT_DIR!\\{}"'.format(
+                        str(PureWindowsPath(filepath.relative_to(output_dir)))
+                    )
+                    for filepath in tup_filepaths_conda_sorted
+                ]
             )
+        )
         bat_content.append("")
-    if list_filepaths_pypi:
+
+    if tup_filepaths_pypi:
         bat_content.append("REM Install PyPI packages")
-        for filepath in list_filepaths_pypi:
-            rel_path = get_relative_path(filepath)
-            # Use backslashes for Windows batch file
-            rel_path_windows = rel_path.replace("/", "\\")
-            # Ensure backslash between SCRIPT_DIR and path
-            bat_content.append(
-                f'call conda run -n {env_name} pip install --no-deps --no-build-isolation "!SCRIPT_DIR!\\{rel_path_windows}"'
+
+        bat_content.append(
+            " ".join(
+                [
+                    "call",
+                    "conda",
+                    "run",
+                    "-n",
+                    "%env_name%",
+                    "pip",
+                    "install",
+                    "--no-deps",
+                    "--no-build-isolation",
+                ]
+                + [
+                    '^\n    "!SCRIPT_DIR!\\{}"'.format(
+                        str(PureWindowsPath(filepath.relative_to(output_dir)))
+                    )
+                    for filepath in tup_filepaths_pypi
+                ]
             )
+        )
         bat_content.append("")
+
     bat_content.append("echo Installation completed.")
     bat_path = output_dir / "install_packages.bat"
     # Write .bat file with CRLF line endings
-    bat_path.write_text("\r\n".join(bat_content), encoding="utf-8")
+    bat_path.write_text("\r\n".join(bat_content), encoding=encoding)
 
     # Generate Unix/Linux shell script (.sh)
     sh_content = [
@@ -331,27 +338,63 @@ def generate_install_scripts(
         'SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"',
         'cd "$SCRIPT_DIR"',
         "",
+        f"env_name={env_name}",
+        "# Create new conda environment.",
+        "conda create -y -n $env_name --offline",
+        "",
     ]
-    if list_filepaths_conda_sorted:
+    if tup_filepaths_conda_sorted:
         sh_content.append("# Install conda packages")
-        for filepath in list_filepaths_conda_sorted:
-            rel_path = get_relative_path(filepath)
-            sh_content.append(
-                f'conda install -y -n {env_name} --offline --use-local "$SCRIPT_DIR/{rel_path}"'
+        sh_content.append(
+            " ".join(
+                [
+                    "conda",
+                    "install",
+                    "-y",
+                    "-n",
+                    "$env_name",
+                    "--offline",
+                    "--use-local",
+                ]
+                + [
+                    '\\\n    "$SCRIPT_DIR/{}"'.format(
+                        filepath.relative_to(output_dir).as_posix()
+                    )
+                    for filepath in tup_filepaths_conda_sorted
+                ]
             )
+        )
         sh_content.append("")
-    if list_filepaths_pypi:
+
+    if tup_filepaths_pypi:
         sh_content.append("# Install PyPI packages")
-        for filepath in list_filepaths_pypi:
-            rel_path = get_relative_path(filepath)
-            sh_content.append(
-                f'conda run -n {env_name} pip install --no-deps --no-build-isolation "$SCRIPT_DIR/{rel_path}"'
+        sh_content.append(
+            " ".join(
+                [
+                    "conda",
+                    "run",
+                    "-n",
+                    "$env_name",
+                    "pip",
+                    "install",
+                    "--no-deps",
+                    "--no-build-isolaiton",
+                ]
+                + [
+                    '\\\n    "$SCRIPT_DIR/{}"'.format(
+                        filepath.relative_to(output_dir).as_posix()
+                    )
+                    for filepath in tup_filepaths_conda_sorted
+                ]
             )
+        )
         sh_content.append("")
+
     sh_content.append('echo "Installation completed."')
     sh_path = output_dir / "install_packages.sh"
     sh_content_str = "\n".join(sh_content)
     sh_path.write_text(sh_content_str, encoding="utf-8")
+
     # Make shell script executable on Unix systems
     try:
         os.chmod(sh_path, 0o755)

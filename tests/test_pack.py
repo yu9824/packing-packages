@@ -7,9 +7,6 @@ FILEPATH_YAML = Path(__file__).parent.resolve() / "env.yml"
 
 
 def test_pack(debug):
-    from logging import getLogger
-
-    print(getLogger("packing_packages.pack._core"))
     packing_packages(dry_run=True)
 
 

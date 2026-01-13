@@ -61,7 +61,7 @@ Use `--generate-scripts` to create reusable install scripts that do not depend o
 
 ```bash
 # Generate scripts in the package directory (default)
-packing-packages install . --generate-scripts
+packing-packages install ./<envname> --generate-scripts
 
 # Specify environment name and output directory explicitly
 packing-packages install /path/to/packages \

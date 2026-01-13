@@ -1,19 +1,16 @@
 import argparse
-import os
 import sys
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Optional
 
+from packing_packages.helpers import check_env_name
 from packing_packages.pack._core import packing_packages
 
 
 def pack(args: argparse.Namespace) -> None:
     """pack conda environment"""
-    if args.env_name is None:
-        env_name = os.environ["CONDA_DEFAULT_ENV"]
-    else:
-        env_name = args.env_name
+    env_name = check_env_name(args.env_name, encoding=args.encoding)
 
     dirpath_target = Path(args.dirpath_target).resolve()
     if not dirpath_target.is_dir():

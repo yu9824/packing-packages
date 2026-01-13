@@ -134,7 +134,7 @@ def create_default_formatter(use_color: Optional[bool] = None) -> Formatter:
     )
 
     if should_use_color:
-        from colorlog import ColoredFormatter
+        from colorlog import ColoredFormatter  # type: ignore
 
         return ColoredFormatter(
             "%(asctime)s - %(name)s:%(lineno)d%(log_color)s[%(levelname)s]%(reset)s - %(message)s"
