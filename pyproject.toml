@@ -37,7 +37,7 @@ docs = [
     "sphinx-book-theme",
     "jupyter-sphinx",
 ]
-gui = ["TkEasyGUI"]
+# gui = ["TkEasyGUI"]
 
 [project.urls]
 Homepage = "https://github.com/yu9824/packing-packages"
@@ -45,7 +45,7 @@ Documentation = "https://yu9824.github.io/packing-packages/"
 PyPI = "https://pypi.org/project/packing-packages/"
 Source = "https://github.com/yu9824/packing-packages"
 Tracker = "https://github.com/yu9824/packing-packages/issues"
-Changelog = "https://github.com/yu9824/packing-packages/blob/main/CHANGELOG.md"
+# Changelog = "https://github.com/yu9824/packing-packages/blob/main/CHANGELOG.md"
 
 [project.scripts]
 packing-packages = "packing_packages.__main__:entrypoint"
@@ -68,3 +68,6 @@ indent-width = 4
 
 [tool.ruff.lint]
 unfixable = ["F401"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
