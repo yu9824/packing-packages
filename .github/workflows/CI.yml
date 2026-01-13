@@ -6,9 +6,44 @@ run-name: ${{ github.workflow }} (${{ github.ref_name }})
 on:
   workflow_dispatch:
   push:
-    # branches:
-    #   - 'main'
-    #   - 'dev'
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - '**/*.py'
+      - 'tests/**'
+      - 'packages/**'
+      - '.github/workflows/CI.yml'
+      - 'pyproject.toml'
+      - 'setup.py'
+      - 'setup.cfg'
+      - 'requirements*.txt'
+      - 'tox.ini'
+    paths-ignore:
+      - '**/*.md'
+      - '**/*.txt'
+      - '**/*.rst'
+      - 'docs/**'
+      - '*.md'
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - 'src/**'
+      - '**/*.py'
+      - 'tests/**'
+      - 'packages/**'
+      - '.github/workflows/CI.yml'
+      - 'pyproject.toml'
+      - 'setup.py'
+      - 'setup.cfg'
+      - 'requirements*.txt'
+      - 'tox.ini'
+    paths-ignore:
+      - '**/*.md'
+      - '**/*.txt'
+      - '**/*.rst'
+      - 'docs/**'
+      - '*.md'
 
 jobs:
   build-linux:
@@ -17,7 +52,7 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
-      max-parallel: 5
+      max-parallel: 6
 
     steps:
     - uses: actions/checkout@v4
