@@ -5,7 +5,19 @@ It includes functions for checking if a package is installed, creating dummy pro
 and checking if an argument is passed to a function.
 """
 
-from ._helpers import check_encoding, dummy_tqdm, is_argument, is_installed
+from ._helpers import (
+    check_encoding,
+    check_env_name,
+    dummy_tqdm,
+    is_argument,
+    is_installed,
+)
 
 # ドキュメント化したい場合は、モジュールメソッドとして登録するため、__all__に入れる。
-__all__ = ("check_encoding", "dummy_tqdm", "is_argument", "is_installed")
+__all__ = (
+    "check_encoding",
+    "check_env_name",
+    "dummy_tqdm",
+    "is_argument",
+    "is_installed",
+)

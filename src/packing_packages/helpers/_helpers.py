@@ -1,5 +1,7 @@
 import importlib.util
 import inspect
+import os
+import subprocess
 import sys
 from collections.abc import Callable, Iterable, Iterator
 from typing import Any, Optional, TypeVar
@@ -90,3 +92,33 @@ def check_encoding(encoding: Optional[str]) -> str:
         return encoding
     except LookupError as e:
         raise ValueError(f"Invalid encoding: {encoding}") from e
+
+
+def check_env_name(
+    env_name: Optional[str] = None, encoding: Optional[str] = None
+) -> str:
+    encoding = check_encoding(encoding)
+
+    if env_name is None:
+        env_name = os.environ["CONDA_DEFAULT_ENV"]
+    else:
+        # check environment name
+        result_conda_env_list = subprocess.run(
+            [
+                os.environ["CONDA_EXE"],
+                "info",
+                "-e",
+            ],
+            stdout=subprocess.PIPE,
+        )
+        conda_env_list = result_conda_env_list.stdout.decode(
+            encoding
+        ).splitlines()
+        env_name_list = {
+            line.split()[0]
+            for line in conda_env_list
+            if line and line.startswith("#")
+        }
+        if env_name not in env_name_list:
+            raise ValueError(f"Environment '{env_name}' not found.")
+    return env_name
