@@ -1,9 +1,9 @@
 import argparse
-import os
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Optional
 
+from packing_packages.helpers import check_env_name
 from packing_packages.install._core import (
     generate_install_scripts,
     install_packages,
@@ -26,10 +26,8 @@ def install(args: argparse.Namespace) -> None:
         )
     else:
         # For install_packages, use current environment if not specified
-        if args.env_name is None:
-            env_name = os.environ["CONDA_DEFAULT_ENV"]
-        else:
-            env_name = args.env_name
+        env_name = check_env_name(args.env_name, args.encoding)
+
         install_packages(
             dirpath_packages=dirpath_packages,
             env_name=env_name,

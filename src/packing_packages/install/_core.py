@@ -7,16 +7,20 @@ from packing_packages.constants import (
     EXTENSIONS_CONDA,
     EXTENSIONS_PYPI,
 )
-from packing_packages.helpers import check_encoding, is_installed
+from packing_packages.helpers import (
+    check_encoding,
+    check_env_name,
+    is_installed,
+)
+from packing_packages.logging import get_child_logger
 
 if is_installed("tqdm"):
-    from tqdm import tqdm
+    from tqdm.auto import tqdm  # type: ignore[MissingImport]
 else:
     from packing_packages.helpers import (  # type: ignore[assignment]
         dummy_tqdm as tqdm,
     )
 
-from packing_packages.logging import get_child_logger
 
 _logger = get_child_logger(__name__)
 
@@ -36,29 +40,7 @@ def install_packages(
         directory path of packages
     """
     encoding = check_encoding(encoding)
-
-    if env_name is None:
-        env_name = os.environ["CONDA_DEFAULT_ENV"]
-    else:
-        # check environment name
-        result_conda_env_list = subprocess.run(
-            [
-                os.environ["CONDA_EXE"],
-                "info",
-                "-e",
-            ],
-            stdout=subprocess.PIPE,
-        )
-        conda_env_list = result_conda_env_list.stdout.decode(
-            encoding
-        ).splitlines()
-        env_name_list = {
-            line.split()[0]
-            for line in conda_env_list
-            if line and line[0] != "#"
-        }
-        if env_name not in env_name_list:
-            raise ValueError(f"Environment '{env_name}' not found.")
+    env_name = check_env_name(env_name, encoding)
 
     _logger.info(
         f"Installing packages from '{dirpath_packages}' into '{env_name}'"
@@ -194,6 +176,7 @@ def generate_install_scripts(
     dirpath_packages: Union[str, os.PathLike] = ".",
     env_name: Optional[str] = None,
     output_dir: Optional[Union[str, os.PathLike]] = None,
+    encoding: Optional[str] = None,
 ) -> dict[str, Path]:
     """Generate install scripts for Windows and Unix/Linux.
 
@@ -223,8 +206,8 @@ def generate_install_scripts(
             f"Package directory not found: {dirpath_packages}"
         )
 
-    if env_name is None:
-        env_name = dirpath_packages.name
+    encoding = check_encoding(encoding)
+    env_name = check_env_name(env_name, encoding=encoding)
 
     if output_dir is None:
         output_dir = dirpath_packages
