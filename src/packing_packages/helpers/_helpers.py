@@ -117,8 +117,11 @@ def check_env_name(
         env_name_list = {
             line.split()[0]
             for line in conda_env_list
-            if line and line.startswith("#")
+            if line and not line.startswith("#")
         }
         if env_name not in env_name_list:
-            raise ValueError(f"Environment '{env_name}' not found.")
+            raise ValueError(
+                f"Environment '{env_name}' not found. "
+                "Environments: ('{{}}')".format("','".join(env_name_list))
+            )
     return env_name
