@@ -25,7 +25,7 @@ from ._utils import (
 )
 
 if is_installed("tqdm"):
-    from tqdm.auto import tqdm
+    from tqdm.auto import tqdm  # type: ignore
 else:
     from packing_packages.helpers import (  # type: ignore[assignment]
         dummy_tqdm as tqdm,

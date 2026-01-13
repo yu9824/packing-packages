@@ -16,7 +16,7 @@ from packing_packages.pack._utils import (
 from packing_packages.pack.yaml.constants import PLATFORM_MAP
 
 if is_installed("tqdm"):
-    from tqdm.auto import tqdm
+    from tqdm.auto import tqdm  # type: ignore
 else:
     from packing_packages.helpers import (  # type: ignore[assignment]
         dummy_tqdm as tqdm,
@@ -27,7 +27,7 @@ _logger = get_child_logger(__name__)
 
 
 if is_installed("yaml"):
-    import yaml
+    import yaml  # type: ignore
 
     def packing_packages_from_yaml(
         filepath_yaml: Union[os.PathLike, str],

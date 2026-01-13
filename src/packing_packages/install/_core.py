@@ -15,7 +15,7 @@ from packing_packages.helpers import (
 from packing_packages.logging import get_child_logger
 
 if is_installed("tqdm"):
-    from tqdm.auto import tqdm  # type: ignore[MissingImport]
+    from tqdm.auto import tqdm  # type: ignore
 else:
     from packing_packages.helpers import (  # type: ignore[assignment]
         dummy_tqdm as tqdm,
