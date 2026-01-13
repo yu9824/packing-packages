@@ -25,6 +25,52 @@ else:
 _logger = get_child_logger(__name__)
 
 
+def _get_conda_packages_path(
+    dirpath_packages: Union[os.PathLike, str] = ".",
+) -> tuple[Path, ...]:
+    dirpath_packages = Path(dirpath_packages)
+
+    return tuple(
+        sum(
+            [
+                [
+                    filepath
+                    for filepath in dirpath_packages.glob(f"**/*{ext}")
+                    if filepath.is_file()
+                ]
+                for ext in EXTENSIONS_CONDA
+            ],
+            start=[],
+        )
+    )
+
+
+def _get_pypi_packages_path(
+    dirpath_packages: Union[os.PathLike, str] = ".",
+) -> tuple[Path, ...]:
+    dirpath_packages = Path(dirpath_packages)
+
+    return tuple(
+        sum(
+            [
+                [
+                    filepath
+                    for filepath in dirpath_packages.glob(f"**/*{ext}")
+                    if filepath.is_file()
+                ]
+                for ext in EXTENSIONS_PYPI
+            ],
+            start=[],
+        )
+    )
+
+
+def _is_python_package(filepath: Path) -> bool:
+    """Check if the package is a python package."""
+    name_lower = filepath.name.lower()
+    return name_lower.startswith("python-") or name_lower.startswith("python_")
+
+
 def install_packages(
     env_name: Optional[str] = None,
     dirpath_packages: Union[str, os.PathLike] = ".",
@@ -48,46 +94,21 @@ def install_packages(
 
     dirpath_packages = Path(dirpath_packages).resolve()
 
-    list_filepaths_conda: list[Path] = sum(
-        [
-            [
-                filepath
-                for filepath in dirpath_packages.glob(f"**/*{ext}")
-                if filepath.is_file()
-            ]
-            for ext in EXTENSIONS_CONDA
-        ],
-        start=[],
-    )
-    list_filepaths_pypi: list[Path] = sum(
-        [
-            [
-                filepath
-                for filepath in dirpath_packages.glob(f"**/*{ext}")
-                if filepath.is_file()
-            ]
-            for ext in EXTENSIONS_PYPI
-        ],
-        start=[],
-    )
+    tup_filepaths_conda = _get_conda_packages_path(dirpath_packages)
+    tup_filepaths_pypi = _get_pypi_packages_path(dirpath_packages)
 
     # Sort conda packages: python packages first
-    def is_python_package(filepath: Path) -> bool:
-        """Check if the package is a python package."""
-        name_lower = filepath.name.lower()
-        return name_lower.startswith("python-") or name_lower.startswith(
-            "python_"
+    tup_filepaths_conda = tuple(
+        sorted(
+            tup_filepaths_conda,
+            key=lambda p: (not _is_python_package(p), p.name),
         )
-
-    list_filepaths_conda = sorted(
-        list_filepaths_conda,
-        key=lambda p: (not is_python_package(p), p.name),
     )
 
     list_filepaths_conda_failed: list[Path] = []
     # install conda packages
     for filepath_conda in tqdm(
-        list_filepaths_conda,
+        tup_filepaths_conda,
         desc="Installing conda packages",
         unit="package",
     ):
@@ -116,7 +137,7 @@ def install_packages(
     # install pypi packages
     list_filepaths_pypi_failed: list[Path] = []
     for filepath_pypi in tqdm(
-        list_filepaths_pypi,
+        tup_filepaths_pypi,
         desc="Installing PyPI packages",
         unit="package",
     ):
@@ -159,7 +180,7 @@ def install_packages(
         _logger.info("All PyPI packages installed successfully.")
 
     _logger.info(
-        f"Installed {len(list_filepaths_conda) + len(list_filepaths_pypi)} packages."
+        f"Installed {len(tup_filepaths_conda) + len(tup_filepaths_pypi)} packages."
     )
     _logger.info(
         f"Failed to install {len(list_filepaths_conda_failed) + len(list_filepaths_pypi_failed)} packages."
@@ -216,40 +237,13 @@ def generate_install_scripts(
         output_dir.mkdir(parents=True, exist_ok=True)
 
     # Find package files
-    list_filepaths_conda: list[Path] = sum(
-        [
-            [
-                filepath
-                for filepath in dirpath_packages.glob(f"**/*{ext}")
-                if filepath.is_file()
-            ]
-            for ext in EXTENSIONS_CONDA
-        ],
-        start=[],
-    )
-    list_filepaths_pypi: list[Path] = sum(
-        [
-            [
-                filepath
-                for filepath in dirpath_packages.glob(f"**/*{ext}")
-                if filepath.is_file()
-            ]
-            for ext in EXTENSIONS_PYPI
-        ],
-        start=[],
-    )
+    tup_filepaths_conda = _get_conda_packages_path(dirpath_packages)
+    tup_filepaths_pypi = _get_pypi_packages_path(dirpath_packages)
 
     # Sort conda packages: python packages first
-    def is_python_package(filepath: Path) -> bool:
-        """Check if the package is a python package."""
-        name_lower = filepath.name.lower()
-        return name_lower.startswith("python-") or name_lower.startswith(
-            "python_"
-        )
-
-    list_filepaths_conda_sorted = sorted(
-        list_filepaths_conda,
-        key=lambda p: (not is_python_package(p), p.name),
+    tup_filepaths_conda_sorted = sorted(
+        tup_filepaths_conda,
+        key=lambda p: (not _is_python_package(p), p.name),
     )
 
     # Calculate relative paths from script location (output_dir) to packages
@@ -276,9 +270,9 @@ def generate_install_scripts(
         'cd /d "!SCRIPT_DIR!"',
         "",
     ]
-    if list_filepaths_conda_sorted:
+    if tup_filepaths_conda_sorted:
         bat_content.append("REM Install conda packages")
-        for filepath in list_filepaths_conda_sorted:
+        for filepath in tup_filepaths_conda_sorted:
             rel_path = get_relative_path(filepath)
             # Use backslashes for Windows batch file
             rel_path_windows = rel_path.replace("/", "\\")
@@ -287,9 +281,9 @@ def generate_install_scripts(
                 f'call conda install -y -n {env_name} --offline --use-local "!SCRIPT_DIR!\\{rel_path_windows}"'
             )
         bat_content.append("")
-    if list_filepaths_pypi:
+    if tup_filepaths_pypi:
         bat_content.append("REM Install PyPI packages")
-        for filepath in list_filepaths_pypi:
+        for filepath in tup_filepaths_pypi:
             rel_path = get_relative_path(filepath)
             # Use backslashes for Windows batch file
             rel_path_windows = rel_path.replace("/", "\\")
@@ -315,17 +309,17 @@ def generate_install_scripts(
         'cd "$SCRIPT_DIR"',
         "",
     ]
-    if list_filepaths_conda_sorted:
+    if tup_filepaths_conda_sorted:
         sh_content.append("# Install conda packages")
-        for filepath in list_filepaths_conda_sorted:
+        for filepath in tup_filepaths_conda_sorted:
             rel_path = get_relative_path(filepath)
             sh_content.append(
                 f'conda install -y -n {env_name} --offline --use-local "$SCRIPT_DIR/{rel_path}"'
             )
         sh_content.append("")
-    if list_filepaths_pypi:
+    if tup_filepaths_pypi:
         sh_content.append("# Install PyPI packages")
-        for filepath in list_filepaths_pypi:
+        for filepath in tup_filepaths_pypi:
             rel_path = get_relative_path(filepath)
             sh_content.append(
                 f'conda run -n {env_name} pip install --no-deps --no-build-isolation "$SCRIPT_DIR/{rel_path}"'
