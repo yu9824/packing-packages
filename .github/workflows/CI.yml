@@ -21,10 +21,12 @@ on:
       - 'tox.ini'
     paths-ignore:
       - '**/*.md'
-      - '**/*.txt'
       - '**/*.rst'
       - 'docs/**'
       - '*.md'
+      - 'README.md'
+      - 'CHANGELOG.md'
+      - 'LICENSE'
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     paths:
@@ -40,10 +42,12 @@ on:
       - 'tox.ini'
     paths-ignore:
       - '**/*.md'
-      - '**/*.txt'
       - '**/*.rst'
       - 'docs/**'
       - '*.md'
+      - 'README.md'
+      - 'CHANGELOG.md'
+      - 'LICENSE'
 
 jobs:
   build-linux:
