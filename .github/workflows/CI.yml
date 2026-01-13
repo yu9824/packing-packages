@@ -19,14 +19,6 @@ on:
       - 'setup.cfg'
       - 'requirements*.txt'
       - 'tox.ini'
-    paths-ignore:
-      - '**/*.md'
-      - '**/*.rst'
-      - 'docs/**'
-      - '*.md'
-      - 'README.md'
-      - 'CHANGELOG.md'
-      - 'LICENSE'
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     paths:
@@ -40,14 +32,6 @@ on:
       - 'setup.cfg'
       - 'requirements*.txt'
       - 'tox.ini'
-    paths-ignore:
-      - '**/*.md'
-      - '**/*.rst'
-      - 'docs/**'
-      - '*.md'
-      - 'README.md'
-      - 'CHANGELOG.md'
-      - 'LICENSE'
 
 jobs:
   build-linux:
