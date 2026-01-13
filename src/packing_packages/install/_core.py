@@ -266,8 +266,10 @@ def generate_install_scripts(
         'if "!SCRIPT_DIR:~-1!"=="\\" set "SCRIPT_DIR=!SCRIPT_DIR:~0,-1!"',
         'cd /d "!SCRIPT_DIR!"',
         "",
+        f"set env_name={env_name}",
+        "",
         "REM Create new conda environment.",
-        f"call conda create -y -n {env_name} --offline",
+        "call conda create -y -n %env_name% --offline",
         "",
     ]
     if tup_filepaths_conda_sorted:
@@ -280,7 +282,7 @@ def generate_install_scripts(
                     "install",
                     "-y",
                     "-n",
-                    env_name,
+                    "%env_name%",
                     "--offline",
                     "--use-local",
                 ]
@@ -304,7 +306,7 @@ def generate_install_scripts(
                     "conda",
                     "run",
                     "-n",
-                    env_name,
+                    "%env_name%",
                     "pip",
                     "install",
                     "--no-deps",
@@ -336,8 +338,9 @@ def generate_install_scripts(
         'SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"',
         'cd "$SCRIPT_DIR"',
         "",
+        f"env_name={env_name}",
         "# Create new conda environment.",
-        f"conda create -y -n {env_name} --offline",
+        "conda create -y -n $env_name --offline",
         "",
     ]
     if tup_filepaths_conda_sorted:
@@ -349,7 +352,7 @@ def generate_install_scripts(
                     "install",
                     "-y",
                     "-n",
-                    env_name,
+                    "$env_name",
                     "--offline",
                     "--use-local",
                 ]
@@ -371,7 +374,7 @@ def generate_install_scripts(
                     "conda",
                     "run",
                     "-n",
-                    env_name,
+                    "$env_name",
                     "pip",
                     "install",
                     "--no-deps",
