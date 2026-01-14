@@ -94,31 +94,60 @@ def check_encoding(encoding: Optional[str]) -> str:
         raise ValueError(f"Invalid encoding: {encoding}") from e
 
 
+def get_env_list(encoding: Optional[str] = None) -> set[str]:
+    """Get list of conda environments.
+
+    Parameters
+    ----------
+    encoding : str, optional
+        Encoding for subprocess output. If None, uses system default encoding, by default None
+
+    Returns
+    -------
+    set[str]
+        List of conda environments
+    """
+    encoding = check_encoding(encoding)
+    result_conda_env_list = subprocess.run(
+        [
+            os.environ["CONDA_EXE"],
+            "info",
+            "-e",
+        ],
+        stdout=subprocess.PIPE,
+        check=True,
+    )
+    return {
+        line.split()[0]
+        for line in result_conda_env_list.stdout.decode(encoding).splitlines()
+        if line and not line.startswith("#")
+    }
+
+
 def check_env_name(
     env_name: Optional[str] = None, encoding: Optional[str] = None
 ) -> str:
+    """Check if the environment name is valid.
+
+    Parameters
+    ----------
+    env_name : str, optional
+        Environment name. If None, uses the current conda environment, by default None
+    encoding : str, optional
+        Encoding for subprocess output. If None, uses system default encoding, by default None
+
+    Returns
+    -------
+    str
+        Environment name
+    """
     encoding = check_encoding(encoding)
 
     if env_name is None:
         env_name = os.environ["CONDA_DEFAULT_ENV"]
     else:
         # check environment name
-        result_conda_env_list = subprocess.run(
-            [
-                os.environ["CONDA_EXE"],
-                "info",
-                "-e",
-            ],
-            stdout=subprocess.PIPE,
-        )
-        conda_env_list = result_conda_env_list.stdout.decode(
-            encoding
-        ).splitlines()
-        env_name_list = {
-            line.split()[0]
-            for line in conda_env_list
-            if line and not line.startswith("#")
-        }
+        env_name_list = get_env_list(encoding)
         if env_name not in env_name_list:
             raise ValueError(
                 f"Environment '{env_name}' not found. "
