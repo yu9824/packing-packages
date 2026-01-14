@@ -16,12 +16,11 @@ def install(args: argparse.Namespace) -> None:
         raise FileNotFoundError(dirpath_packages)
 
     if args.generate_scripts:
-        # For generate_scripts, if env_name is not specified, pass None
-        # so it will be determined from directory name in the function
         generate_install_scripts(
             dirpath_packages=dirpath_packages,
             env_name=args.env_name,
             output_dir=args.output_dir,
+            encoding=args.encoding,
         )
     else:
         install_packages(
