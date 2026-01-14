@@ -6,6 +6,6 @@ This section contains step-by-step tutorials for using `packing_packages`.
 :maxdepth: 2
 :caption: Tutorials
 
-logging
+commandline
 ```
 
