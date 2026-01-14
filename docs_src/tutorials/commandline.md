@@ -36,14 +36,27 @@ packing-packages pack
 packing-packages pack -d .
 ```
 
-This will save the packages to the current directory (`.`) as follow.
+This will save the packages to the current directory (`.`) with the following structure:
 
 ```
 .
-└── <envname>
-    ├── conda
-    └── pypi
+└── <envname>/
+    ├── conda/
+    │   ├── python-3.11.0-h1234567_0.tar.bz2
+    │   ├── numpy-1.24.3-py311h1234567_0.conda
+    │   ├── pandas-2.0.0-py311h1234567_0.tar.bz2
+    │   └── ...
+    └── pypi/
+        ├── requests-2.31.0-py3-none-any.whl
+        ├── beautifulsoup4-4.12.2-py3-none-any.whl
+        ├── somepackage-1.0.0.tar.gz
+        └── ...
 ```
+
+**Directory Structure:**
+- `<envname>/`: Directory named after the conda environment
+  - `conda/`: Contains conda packages (`.tar.bz2` or `.conda` files)
+  - `pypi/`: Contains PyPI packages (`.whl` or `.tar.gz` files)
 
 ### Options
 
@@ -61,6 +74,16 @@ Specify the path to the directory where the packed environment will be saved. De
 
 ```bash
 packing-packages pack -d /path/to/output
+```
+
+This creates the following structure:
+```
+/path/to/output/
+└── <envname>/
+    ├── conda/
+    │   └── *.tar.bz2, *.conda files
+    └── pypi/
+        └── *.whl, *.tar.gz files
 ```
 
 #### `-D, --dry-run`
@@ -121,6 +144,16 @@ Specify the path to the conda environment file (`.yaml`).
 
 ```bash
 packing-packages pack yaml environment.yaml
+```
+
+The output structure is the same as the `pack` command:
+```
+.
+└── <envname>/          # Default: directory name from YAML or current directory
+    ├── conda/
+    │   └── *.tar.bz2, *.conda files
+    └── pypi/
+        └── *.whl, *.tar.gz files
 ```
 
 #### `-p, --platform`
@@ -201,11 +234,31 @@ packing-packages install .
 
 #### `DIRPATH_PACKAGES` (positional argument)
 
-Specify the path to the directory containing packages to install (e.g., `*.tar.bz2`, `*.conda`). Defaults to the current directory (`.`) if not specified.
+Specify the path to the directory containing packages to install. This should point to the directory containing the `conda/` and `pypi/` subdirectories (or the parent directory containing the environment-named folder). Defaults to the current directory (`.`) if not specified.
 
 ```bash
 packing-packages install /path/to/packages
 ```
+
+**Expected directory structure:**
+```
+/path/to/packages/          # Can be either:
+├── conda/                  # Option 1: Direct access to conda/ and pypi/
+│   └── *.tar.bz2, *.conda
+└── pypi/
+    └── *.whl, *.tar.gz
+
+# OR
+
+/path/to/packages/
+└── <envname>/              # Option 2: Environment-named directory
+    ├── conda/
+    │   └── *.tar.bz2, *.conda
+    └── pypi/
+        └── *.whl, *.tar.gz
+```
+
+The command automatically detects and installs packages from both `conda/` and `pypi/` subdirectories.
 
 #### `-n, --env-name`
 
@@ -225,10 +278,25 @@ packing-packages install . -e utf-8
 
 #### `--generate-scripts`
 
-Generate install scripts (`install_packages.bat`, `install_packages.ps1`, `install_packages.sh`) instead of installing packages directly. These scripts can be distributed and used independently.
+Generate install scripts (`install_packages.bat`, `install_packages.sh`) instead of installing packages directly. These scripts can be distributed and used independently.
 
 ```bash
 packing-packages install ./packages --generate-scripts
+```
+
+**Generated files:**
+- `install_packages.bat`: Windows batch script
+- `install_packages.sh`: Unix/Linux shell script
+
+**Directory structure after generation:**
+```
+./packages/
+├── conda/
+│   └── *.tar.bz2, *.conda
+├── pypi/
+│   └── *.whl, *.tar.gz
+├── install_packages.bat      # Generated
+└── install_packages.sh       # Generated
 ```
 
 #### `--output-dir`
@@ -237,6 +305,19 @@ Specify the output directory for generated scripts. If not specified, scripts ar
 
 ```bash
 packing-packages install ./packages --generate-scripts --output-dir ./scripts
+```
+
+**Resulting structure:**
+```
+./packages/
+├── conda/
+│   └── *.tar.bz2, *.conda
+└── pypi/
+    └── *.whl, *.tar.gz
+
+./scripts/
+├── install_packages.bat      # Generated here
+└── install_packages.sh       # Generated here
 ```
 
 ### Examples
@@ -280,15 +361,39 @@ python -m pip install packing-packages
 python -m packing_packages pack -d .
 ```
 
+This creates the following structure:
+```
+.
+└── myenv/
+    ├── conda/
+    │   ├── python-3.11.0-h1234567_0.tar.bz2
+    │   ├── numpy-1.24.3-py311h1234567_0.conda
+    │   └── ...
+    └── pypi/
+        ├── requests-2.31.0-py3-none-any.whl
+        └── ...
+```
+
 Or from a YAML file:
 
 ```bash
 python -m packing_packages pack yaml environment.yaml -p linux-64
 ```
 
+This creates the same structure, but packages are downloaded for the specified platform (`linux-64` in this example).
+
 ### Destination Device (Offline Environment)
 
 #### Method 1: Using Standard Install Commands
+
+Assuming you have the packed environment structure:
+```
+./myenv/
+├── conda/
+│   └── *.tar.bz2, *.conda
+└── pypi/
+    └── *.whl, *.tar.gz
+```
 
 ```bash
 # Create the environment
@@ -296,23 +401,48 @@ conda create -yn myenv --offline
 conda activate myenv
 
 # Install conda packages
-conda install --use-local --offline ./conda/*
+conda install --use-local --offline ./myenv/conda/*
 
 # Install pip packages
-python -m pip install --no-deps --no-build-isolation ./pypi/*
+python -m pip install --no-deps --no-build-isolation ./myenv/pypi/*
 ```
 
 #### Method 2: Using Generated Install Scripts
 
-If you generated scripts on the source device:
+If you generated scripts on the source device using `--generate-scripts`, you'll have:
+```
+./myenv/
+├── conda/
+│   └── *.tar.bz2, *.conda
+├── pypi/
+│   └── *.whl, *.tar.gz
+├── install_packages.bat
+└── install_packages.sh
+```
+
+On the destination device:
 
 ```bash
 # Windows
+cd myenv
 install_packages.bat
 
 # Unix/Linux
+cd myenv
 ./install_packages.sh
 ```
+
+#### Method 3: Using `packing-packages install`
+
+If `packing-packages` is installed on the destination device:
+
+```bash
+conda create -yn myenv --offline
+conda activate myenv
+packing-packages install ./myenv
+```
+
+This automatically detects and installs packages from both `conda/` and `pypi/` subdirectories.
 
 ## Troubleshooting
 

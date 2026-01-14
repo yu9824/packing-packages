@@ -67,7 +67,7 @@ def add_arguments_install(parser: argparse.ArgumentParser) -> None:
         "--generate-scripts",
         action="store_true",
         help=(
-            "Generate install scripts (install_packages.bat, install_packages.ps1, "
+            "Generate install scripts (install_packages.bat, "
             "install_packages.sh) instead of installing packages directly. "
             "These scripts can be distributed and used independently."
         ),
