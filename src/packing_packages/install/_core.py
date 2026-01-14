@@ -24,6 +24,13 @@ else:
 
 _logger = get_child_logger(__name__)
 
+MAX_LETTER_LENGTH_BAT = 7000
+"""Maximum number of letters in a batch file.
+
+'8192' is the maximum number of characters in a batch file.
+But it is recommended to leave some margin for safety.
+"""
+
 
 def _get_conda_packages_path(
     dirpath_packages: Union[os.PathLike, str] = ".",
@@ -269,58 +276,101 @@ def generate_install_scripts(
         f"set env_name={env_name}",
         "",
         "REM Create new conda environment.",
-        "call conda create -y -n %env_name% --offline",
+        "call conda create -y -n %env_name% --offline --no-default-packages",
         "",
     ]
     if tup_filepaths_conda_sorted:
         bat_content.append("REM Install conda packages")
-        bat_content.append(
-            " ".join(
-                [
-                    "call",
-                    "conda",
-                    "install",
-                    "-y",
-                    "-n",
-                    "%env_name%",
-                    "--offline",
-                    "--use-local",
-                ]
-                + [
-                    '^\n    "!SCRIPT_DIR!\\{}"'.format(
-                        str(PureWindowsPath(filepath.relative_to(output_dir)))
-                    )
-                    for filepath in tup_filepaths_conda_sorted
-                ]
-            )
+
+        tup_filepaths_conda_str = tuple(
+            [
+                "{}".format(
+                    str(PureWindowsPath(filepath.relative_to(output_dir)))
+                )
+                for filepath in tup_filepaths_conda_sorted
+            ]
         )
-        bat_content.append("")
+        n_str = sum(map(lambda x: len(x), tup_filepaths_conda_str))
+        _logger.debug(f"'{n_str}' letters.")
+
+        n_split = (n_str // MAX_LETTER_LENGTH_BAT) + bool(
+            n_str % MAX_LETTER_LENGTH_BAT
+        )
+        n_packages = len(tup_filepaths_conda_str)
+        n_packages_each_iter = n_packages // n_split + bool(
+            n_packages % n_split
+        )
+
+        for i in range(n_split):
+            bat_content.append(
+                " ".join(
+                    [
+                        "call",
+                        "conda",
+                        "install",
+                        "-y",
+                        "-n",
+                        "%env_name%",
+                        "--offline",
+                        "--use-local",
+                    ]
+                    + [
+                        f"^\r\n    {filepath_str}"
+                        for filepath_str in tup_filepaths_conda_str[
+                            n_packages_each_iter * i : n_packages_each_iter
+                            * (i + 1)
+                        ]
+                    ]
+                )
+            )
+            bat_content.append("")
 
     if tup_filepaths_pypi:
         bat_content.append("REM Install PyPI packages")
 
-        bat_content.append(
-            " ".join(
-                [
-                    "call",
-                    "conda",
-                    "run",
-                    "-n",
-                    "%env_name%",
-                    "pip",
-                    "install",
-                    "--no-deps",
-                    "--no-build-isolation",
-                ]
-                + [
-                    '^\n    "!SCRIPT_DIR!\\{}"'.format(
-                        str(PureWindowsPath(filepath.relative_to(output_dir)))
-                    )
-                    for filepath in tup_filepaths_pypi
-                ]
-            )
+        tup_filepaths_pypi_str = tuple(
+            [
+                "{}".format(
+                    str(PureWindowsPath(filepath.relative_to(output_dir)))
+                )
+                for filepath in tup_filepaths_pypi
+            ]
         )
-        bat_content.append("")
+        n_str = sum(map(lambda x: len(x), tup_filepaths_pypi_str))
+        _logger.debug(f"'{n_str}' letters.")
+
+        n_split = (n_str // MAX_LETTER_LENGTH_BAT) + bool(
+            n_str % MAX_LETTER_LENGTH_BAT
+        )
+        n_packages = len(tup_filepaths_pypi_str)
+        n_packages_each_iter = n_packages // n_split + bool(
+            n_packages % n_split
+        )
+
+        for i in range(n_split):
+            bat_content.append(
+                " ".join(
+                    [
+                        "call",
+                        "conda",
+                        "run",
+                        "-n",
+                        "%env_name%",
+                        "pip",
+                        "install",
+                        "--no-deps",
+                        "--no-build-isolation",
+                    ]
+                    + [
+                        f"^\r\n    {filepath_str}"
+                        for filepath_str in tup_filepaths_pypi_str[
+                            n_packages_each_iter * i : n_packages_each_iter
+                            * (i + 1)
+                        ]
+                    ]
+                )
+            )
+            bat_content.append("")
 
     bat_content.append("echo Installation completed.")
     bat_path = output_dir / "install_packages.bat"
@@ -340,7 +390,7 @@ def generate_install_scripts(
         "",
         f"env_name={env_name}",
         "# Create new conda environment.",
-        "conda create -y -n $env_name --offline",
+        "conda create -y -n $env_name --offline --no-default-packages",
         "",
     ]
     if tup_filepaths_conda_sorted:
@@ -357,7 +407,7 @@ def generate_install_scripts(
                     "--use-local",
                 ]
                 + [
-                    '\\\n    "$SCRIPT_DIR/{}"'.format(
+                    '\\\n    "{}"'.format(
                         filepath.relative_to(output_dir).as_posix()
                     )
                     for filepath in tup_filepaths_conda_sorted
@@ -378,13 +428,13 @@ def generate_install_scripts(
                     "pip",
                     "install",
                     "--no-deps",
-                    "--no-build-isolaiton",
+                    "--no-build-isolation",
                 ]
                 + [
-                    '\\\n    "$SCRIPT_DIR/{}"'.format(
+                    '\\\n    "{}"'.format(
                         filepath.relative_to(output_dir).as_posix()
                     )
-                    for filepath in tup_filepaths_conda_sorted
+                    for filepath in tup_filepaths_pypi
                 ]
             )
         )
