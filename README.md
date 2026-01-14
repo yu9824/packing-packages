@@ -17,153 +17,114 @@
 
 ![logo](https://github.com/yu9824/packing-packages/blob/main/docs_src/_static/site_logo.png?raw=true)
 
-This tool packs a conda environment and all its dependencies into a directory.
+## Overview
 
-You can migrate the packed environment to another offline machine with the same operating system.
+**Packing-Packages** is a powerful tool for packaging conda environments and their dependencies into portable directories. Perfect for deploying Python environments to offline machines, air-gapped systems, or ensuring reproducible environments across different machines with the same operating system.
+
+### Key Features
+
+- 🚀 **Simple & Fast**: Pack entire conda environments with a single command
+- 📦 **Complete Dependency Resolution**: Automatically includes all conda and pip dependencies
+- 🔄 **Cross-Platform Support**: Pack from YAML files even on different operating systems
+- 🛠️ **Flexible Installation**: Install packages directly or generate standalone install scripts
+- ⚡ **Incremental Updates**: Use `--diff-only` to download only new packages
+- 🎯 **Error Resilient**: Installation continues even if some packages fail, with detailed error reporting
+- 📋 **YAML-Based Packing**: Create packages directly from conda environment YAML files
+
+### Use Cases
+
+- Deploy Python environments to offline or air-gapped systems
+- Create reproducible environment snapshots for production deployments
+- Migrate conda environments between machines without internet access
+- Archive complete environment states for backup or compliance
+- Prepare environment packages for different target platforms
 
 
-## Install
+## Installation
 
 ```bash
-# Need python, setuptools, pip package
 pip install packing-packages
-
 ```
 
-## How to use
+**Requirements**: Python, setuptools, and pip
 
-See help for available commands and options:
+## Quick Start
 
-```bash
-packing-packages --help
-packing-packages pack --help
-packing-packages install --help
+### 1. Pack Your Environment
 
-```
-
-### Pack
+On your source machine (with internet access), pack the current conda environment:
 
 ```bash
+conda activate myenv
 packing-packages pack -d .
-
 ```
 
-### Install
+This creates a directory structure:
+```
+.
+└── myenv/
+    ├── conda/    # Conda packages
+    └── pypi/     # PyPI packages
+```
+
+### 2. Install on Target Machine
+
+On your destination machine (offline), install the packed packages:
 
 ```bash
-packing-packages install .
-
+conda create -yn myenv --offline
+conda activate myenv
+packing-packages install ./myenv
 ```
 
-### Generate install scripts (instead of installing directly)
+### Alternative: Generate Standalone Scripts
 
-Use `--generate-scripts` to create reusable install scripts that do not depend on this package. These scripts can be copied and executed on another machine (offline), and work across platforms (Windows batch and Unix/Linux shell).
+Generate install scripts that work independently without requiring `packing-packages`:
 
 ```bash
-# Generate scripts in the package directory (default)
-packing-packages install ./<envname> --generate-scripts
-
-# Specify environment name and output directory explicitly
-packing-packages install /path/to/packages \
-  --generate-scripts \
-  --env-name myenv \
-  --output-dir /path/to/output
-
+packing-packages install ./myenv --generate-scripts
 ```
 
-Generated files:
+This creates `install_packages.bat` (Windows) and `install_packages.sh` (Unix/Linux) that can be executed directly on the target machine.
 
-- install_packages.bat (Windows)
-- install_packages.sh (Unix/Linux)
+## Advanced Features
 
-Notes:
+### Pack from YAML Files
 
-- If `--env-name` is omitted with `--generate-scripts`, the environment name defaults to the package directory name.
-- If `--output-dir` is omitted, scripts are written to the package directory.
-
-## Example
-
-### Source device
+Pack environments directly from conda environment YAML files, even on a different operating system:
 
 ```bash
-conda activate <envname>
-python -m pip install packing-packages
-python -m packing_packages pack -d .
-
+packing-packages pack yaml environment.yaml -p linux-64
 ```
 
-### Destination device (offline)
+### Incremental Updates
+
+Only download packages that don't already exist in the target directory:
 
 ```bash
-conda create -yn <envname> --offline
-conda activate <envname>
-conda install --use-local --offline ./conda/*
-python -m pip install --no-deps --no-build-isolation ./pypi/*
-
+packing-packages pack -d . --diff-only
 ```
 
-Alternatively, if you generated install scripts on the source device:
+### Error-Resilient Installation
 
-```bash
-# Windows
-install_packages.bat
+The `packing-packages install` command continues even if some packages fail, providing detailed error reports for manual handling.
 
-# Unix/Linux
-./install_packages.sh
-```
+## Documentation
 
-## Notes
+For detailed command-line options, advanced usage, and troubleshooting, see the [full documentation](https://yu9824.github.io/packing-packages/) or the [command-line tutorial](docs_src/tutorials/commandline.md).
 
-### Installing PyTorch from a Non-PyPI Source
+## Important Notes
 
-If you need to download packages from a source other than PyPI (e.g., the official PyTorch index), standard methods may not complete successfully. Some packages may fail to download and require manual handling. Automated support is not currently provided for that case.
+### Installation Methods
 
-```bash
-# Installation command
-pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cu124
+You can install packages using either:
+- **Standard commands** (`conda install` / `pip install`): Faster, but stops on first error
+- **`packing-packages install`**: Slower, but continues on errors and provides detailed reports
 
-# Download command (without dependencies)
-# --no-deps: download only the specified package
-# -d: set the destination directory
-pip download torch==2.5.1 --index-url https://download.pytorch.org/whl/cu124 --no-deps -d .
-```
+### Special Cases
 
-### Handling Installation Failures with `--use-pep517`
+- **Non-PyPI sources** (e.g., PyTorch official index): May require manual handling
+- **Older packages**: Some may need `--use-pep517` flag for successful installation
+- **Proxy environments**: Set `HTTP_PROXY` and `HTTPS_PROXY` environment variables
 
-Some older packages may not install successfully using `pip install`. In such cases, installing with the `--use-pep517` option may help:
-
-```bash
-pip install <package-name> --use-pep517
-```
-
-### Choosing Between Standard Install Commands and `packing-packages install`
-
-There are two main methods for installing packages:
-
-1. Using `conda install` or `pip install`
-2. Using the `packing-packages install` command, which wraps these tools and provides error handling
-
-| Command                         | Advantages                             | Disadvantages                |
-| ------------------------------- | -------------------------------------- | ---------------------------- |
-| `conda install` / `pip install` | Fast execution                         | Stops immediately upon error |
-| `packing-packages install`      | Skips failed packages and reports them | Slower overall process       |
-
-
-### Packing an Environment Using a `.yaml` File
-
-~~If you already have an environment file (`.yaml`), you can create and pack the environment on an online machine with the same OS:~~
-
-You can now pack from a YAML file even on a different OS using the following command:
-
-```bash
-packing-packages pack yaml /path/to/file.yaml
-```
-
-### Using a Proxy (If Required)
-
-If you are in an environment that requires a proxy, you may need to configure the proxy settings before downloading or installing packages:
-
-```bash
-export HTTP_PROXY="your proxy"
-export HTTPS_PROXY="your proxy"
-```
+For detailed troubleshooting and edge cases, please refer to the [command-line tutorial](docs_src/tutorials/commandline.md).

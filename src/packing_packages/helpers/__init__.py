@@ -9,6 +9,7 @@ from ._helpers import (
     check_encoding,
     check_env_name,
     dummy_tqdm,
+    get_env_list,
     is_argument,
     is_installed,
 )
@@ -18,6 +19,7 @@ __all__ = (
     "check_encoding",
     "check_env_name",
     "dummy_tqdm",
+    "get_env_list",
     "is_argument",
     "is_installed",
 )

@@ -3,7 +3,6 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Optional
 
-from packing_packages.helpers import check_env_name
 from packing_packages.install._core import (
     generate_install_scripts,
     install_packages,
@@ -17,20 +16,16 @@ def install(args: argparse.Namespace) -> None:
         raise FileNotFoundError(dirpath_packages)
 
     if args.generate_scripts:
-        # For generate_scripts, if env_name is not specified, pass None
-        # so it will be determined from directory name in the function
         generate_install_scripts(
             dirpath_packages=dirpath_packages,
             env_name=args.env_name,
             output_dir=args.output_dir,
+            encoding=args.encoding,
         )
     else:
-        # For install_packages, use current environment if not specified
-        env_name = check_env_name(args.env_name, args.encoding)
-
         install_packages(
             dirpath_packages=dirpath_packages,
-            env_name=env_name,
+            env_name=args.env_name,
             encoding=args.encoding,
         )
 
@@ -72,7 +67,7 @@ def add_arguments_install(parser: argparse.ArgumentParser) -> None:
         "--generate-scripts",
         action="store_true",
         help=(
-            "Generate install scripts (install_packages.bat, install_packages.ps1, "
+            "Generate install scripts (install_packages.bat, "
             "install_packages.sh) instead of installing packages directly. "
             "These scripts can be distributed and used independently."
         ),
