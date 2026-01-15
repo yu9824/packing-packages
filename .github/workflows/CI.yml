@@ -3,6 +3,11 @@
 name: CI
 run-name: ${{ github.workflow }} (${{ github.ref_name }})
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+
 on:
   workflow_dispatch:
   push:
@@ -34,13 +39,13 @@ on:
       - 'tox.ini'
 
 jobs:
-  build-linux:
-    runs-on: ubuntu-latest
-    # runs-on: ubuntu-22.04
+  test:
     strategy:
       matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
-      max-parallel: 6
+      # max-parallel: 6
+    runs-on: ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v4
@@ -58,4 +63,10 @@ jobs:
     - name: Test with pytest
       shell: bash -l {0}
       run: |
-        pytest -xs .
+        if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+          pytest -xs .
+        elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+          pytest -xs . -m "os_windows or os_win_mac"
+        else
+          pytest -xs . -m "os_macos or os_win_mac"
+        fi

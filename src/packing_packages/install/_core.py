@@ -293,8 +293,6 @@ def generate_install_scripts(
                 f"Environment '{dirpath_packages.name}' not found. (Directory name is automatically assigned as environment name.) "
                 "Environments: ('{{}}')\n".format("','".join(env_name_list))
             )
-    else:
-        env_name = check_env_name(env_name, encoding=encoding)
 
     if output_dir is None:
         output_dir = dirpath_packages
