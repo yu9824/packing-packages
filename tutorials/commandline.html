@@ -1,0 +1,1002 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Command Line Usage &#8212; packing-packages 0.4.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/thebelab.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=a3cf13c8"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="../_static/thebelab-helper.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'tutorials/commandline';</script>
+    <link rel="icon" href="../_static/favicon.png"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Tutorials" href="index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/site_logo.png" class="logo__image only-light" alt="packing-packages 0.4.1 documentation - Home"/>
+    <script>document.write(`<img src="../_static/site_logo_dark.png" class="logo__image only-dark" alt="packing-packages 0.4.1 documentation - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../modules.html">packing_packages</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../packing_packages.html">packing_packages package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../packing_packages.helpers.html">packing_packages.helpers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../packing_packages.install.html">packing_packages.install package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../packing_packages.logging.html">packing_packages.logging package</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../packing_packages.pack.html">packing_packages.pack package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../packing_packages.pack.yaml.html">packing_packages.pack.yaml package</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">Tutorials</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Command Line Usage</a></li>
+</ul>
+</details></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/tutorials/commandline.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Command Line Usage</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#basic-usage">Basic Usage</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#display-help">Display Help</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#check-version">Check Version</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pack-command"><code class="docutils literal notranslate"><span class="pre">pack</span></code> Command</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Basic Usage</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#options">Options</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#n-env-name"><code class="docutils literal notranslate"><span class="pre">-n,</span> <span class="pre">--env-name</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#d-dirpath-target"><code class="docutils literal notranslate"><span class="pre">-d,</span> <span class="pre">--dirpath-target</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#d-dry-run"><code class="docutils literal notranslate"><span class="pre">-D,</span> <span class="pre">--dry-run</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diff-only"><code class="docutils literal notranslate"><span class="pre">--diff-only</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#e-encoding"><code class="docutils literal notranslate"><span class="pre">-e,</span> <span class="pre">--encoding</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#examples">Examples</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pack-yaml-command"><code class="docutils literal notranslate"><span class="pre">pack</span> <span class="pre">yaml</span></code> Command</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Basic Usage</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Options</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#filepath-yaml-required"><code class="docutils literal notranslate"><span class="pre">filepath_yaml</span></code> (required)</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#p-platform"><code class="docutils literal notranslate"><span class="pre">-p,</span> <span class="pre">--platform</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id4"><code class="docutils literal notranslate"><span class="pre">-d,</span> <span class="pre">--dirpath-target</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id5"><code class="docutils literal notranslate"><span class="pre">-D,</span> <span class="pre">--dry-run</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id6"><code class="docutils literal notranslate"><span class="pre">--diff-only</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id7"><code class="docutils literal notranslate"><span class="pre">-e,</span> <span class="pre">--encoding</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">Examples</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#install-command"><code class="docutils literal notranslate"><span class="pre">install</span></code> Command</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">Basic Usage</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">Options</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dirpath-packages-positional-argument"><code class="docutils literal notranslate"><span class="pre">DIRPATH_PACKAGES</span></code> (positional argument)</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id11"><code class="docutils literal notranslate"><span class="pre">-n,</span> <span class="pre">--env-name</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id12"><code class="docutils literal notranslate"><span class="pre">-e,</span> <span class="pre">--encoding</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#generate-scripts"><code class="docutils literal notranslate"><span class="pre">--generate-scripts</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#output-dir"><code class="docutils literal notranslate"><span class="pre">--output-dir</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id13">Examples</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#practical-examples">Practical Examples</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#source-device-online-environment">Source Device (Online Environment)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#destination-device-offline-environment">Destination Device (Offline Environment)</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#method-1-using-standard-install-commands">Method 1: Using Standard Install Commands</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#method-2-using-generated-install-scripts">Method 2: Using Generated Install Scripts</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#method-3-using-packing-packages-install">Method 3: Using <code class="docutils literal notranslate"><span class="pre">packing-packages</span> <span class="pre">install</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#troubleshooting">Troubleshooting</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#encoding-issues">Encoding Issues</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#proxy-configuration">Proxy Configuration</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#handling-installation-errors">Handling Installation Errors</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="command-line-usage">
+<h1>Command Line Usage<a class="headerlink" href="#command-line-usage" title="Link to this heading">#</a></h1>
+<p>This tutorial explains how to use the <code class="docutils literal notranslate"><span class="pre">packing-packages</span></code> command-line interface.</p>
+<section id="basic-usage">
+<h2>Basic Usage<a class="headerlink" href="#basic-usage" title="Link to this heading">#</a></h2>
+<section id="display-help">
+<h3>Display Help<a class="headerlink" href="#display-help" title="Link to this heading">#</a></h3>
+<p>To see available commands and options, display the help:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>packing-packages<span class="w"> </span>--help
+packing-packages<span class="w"> </span>pack<span class="w"> </span>--help
+packing-packages<span class="w"> </span>install<span class="w"> </span>--help
+</pre></div>
+</div>
+</section>
+<section id="check-version">
+<h3>Check Version<a class="headerlink" href="#check-version" title="Link to this heading">#</a></h3>
+<p>To check the current version:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>packing-packages<span class="w"> </span>--version
+</pre></div>
+</div>
+</section>
+</section>
+<section id="pack-command">
+<h2><code class="docutils literal notranslate"><span class="pre">pack</span></code> Command<a class="headerlink" href="#pack-command" title="Link to this heading">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">pack</span></code> command packs a conda environment and all its dependencies into a directory.</p>
+<section id="id1">
+<h3>Basic Usage<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
+<p>To pack the currently active conda environment:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>packing-packages<span class="w"> </span>pack
+<span class="c1"># same as</span>
+packing-packages<span class="w"> </span>pack<span class="w"> </span>-d<span class="w"> </span>.
+</pre></div>
+</div>
+<p>This will save the packages to the current directory (<code class="docutils literal notranslate"><span class="pre">.</span></code>) with the following structure:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>.
+└── &lt;envname&gt;/
+    ├── conda/
+    │   ├── python-3.11.0-h1234567_0.tar.bz2
+    │   ├── numpy-1.24.3-py311h1234567_0.conda
+    │   ├── pandas-2.0.0-py311h1234567_0.tar.bz2
+    │   └── ...
+    └── pypi/
+        ├── requests-2.31.0-py3-none-any.whl
+        ├── beautifulsoup4-4.12.2-py3-none-any.whl
+        ├── somepackage-1.0.0.tar.gz
+        └── ...
+</pre></div>
+</div>
+<p><strong>Directory Structure:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;envname&gt;/</span></code>: Directory named after the conda environment</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">conda/</span></code>: Contains conda packages (<code class="docutils literal notranslate"><span class="pre">.tar.bz2</span></code> or <code class="docutils literal notranslate"><span class="pre">.conda</span></code> files)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pypi/</span></code>: Contains PyPI packages (<code class="docutils literal notranslate"><span class="pre">.whl</span></code> or <code class="docutils literal notranslate"><span class="pre">.tar.gz</span></code> files)</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="options">
+<h3>Options<a class="headerlink" href="#options" title="Link to this heading">#</a></h3>
+<section id="n-env-name">
+<h4><code class="docutils literal notranslate"><span class="pre">-n,</span> <span class="pre">--env-name</span></code><a class="headerlink" href="#n-env-name" title="Link to this heading">#</a></h4>
+<p>Specify the name of the conda environment to pack. If not specified, the currently active environment is used.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>packing-packages<span class="w"> </span>pack<span class="w"> </span>-n<span class="w"> </span>myenv<span class="w"> </span>-d<span class="w"> </span>./packages
+</pre></div>
+</div>
+</section>
+<section id="d-dirpath-target">
+<h4><code class="docutils literal notranslate"><span class="pre">-d,</span> <span class="pre">--dirpath-target</span></code><a class="headerlink" href="#d-dirpath-target" title="Link to this heading">#</a></h4>
+<p>Specify the path to the directory where the packed environment will be saved. Defaults to the current directory (<code class="docutils literal notranslate"><span class="pre">.</span></code>).</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>packing-packages<span class="w"> </span>pack<span class="w"> </span>-d<span class="w"> </span>/path/to/output
+</pre></div>
+</div>
+<p>This creates the following structure:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>/path/to/output/
+└── &lt;envname&gt;/
+    ├── conda/
+    │   └── *.tar.bz2, *.conda files
+    └── pypi/
+        └── *.whl, *.tar.gz files
+</pre></div>
+</div>
+</section>
+<section id="d-dry-run">
+<h4><code class="docutils literal notranslate"><span class="pre">-D,</span> <span class="pre">--dry-run</span></code><a class="headerlink" href="#d-dry-run" title="Link to this heading">#</a></h4>
+<p>Perform a dry run without actually packing the environment. Useful for testing.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>packing-packages<span class="w"> </span>pack<span class="w"> </span>-d<span class="w"> </span>.<span class="w"> </span>--dry-run
+</pre></div>
+</div>
+</section>
+<section id="diff-only">
+<h4><code class="docutils literal notranslate"><span class="pre">--diff-only</span></code><a class="headerlink" href="#diff-only" title="Link to this heading">#</a></h4>
+<p>Skip packages that already exist in the target directory and only download new packages.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>packing-packages<span class="w"> </span>pack<span class="w"> </span>-d<span class="w"> </span>.<span class="w"> </span>--diff-only
+</pre></div>
+</div>
+</section>
+<section id="e-encoding">
+<h4><code class="docutils literal notranslate"><span class="pre">-e,</span> <span class="pre">--encoding</span></code><a class="headerlink" href="#e-encoding" title="Link to this heading">#</a></h4>
+<p>Specify the encoding to use for subprocess execution. If not specified, the system default encoding is used.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>packing-packages<span class="w"> </span>pack<span class="w"> </span>-d<span class="w"> </span>.<span class="w"> </span>-e<span class="w"> </span>utf-8
+</pre></div>
+</div>
+</section>
+</section>
+<section id="examples">
+<h3>Examples<a class="headerlink" href="#examples" title="Link to this heading">#</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Pack the current environment to the current directory</span>
+packing-packages<span class="w"> </span>pack<span class="w"> </span>-d<span class="w"> </span>.
+
+<span class="c1"># Pack a specific environment</span>
+packing-packages<span class="w"> </span>pack<span class="w"> </span>-n<span class="w"> </span>myenv<span class="w"> </span>-d<span class="w"> </span>./myenv_packages
+
+<span class="c1"># Check with a dry run</span>
+packing-packages<span class="w"> </span>pack<span class="w"> </span>-n<span class="w"> </span>myenv<span class="w"> </span>-d<span class="w"> </span>./myenv_packages<span class="w"> </span>--dry-run
+
+<span class="c1"># Skip existing packages and download only differences</span>
+packing-packages<span class="w"> </span>pack<span class="w"> </span>-n<span class="w"> </span>myenv<span class="w"> </span>-d<span class="w"> </span>./myenv_packages<span class="w"> </span>--diff-only
+</pre></div>
+</div>
+</section>
+</section>
+<section id="pack-yaml-command">
+<h2><code class="docutils literal notranslate"><span class="pre">pack</span> <span class="pre">yaml</span></code> Command<a class="headerlink" href="#pack-yaml-command" title="Link to this heading">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">pack</span> <span class="pre">yaml</span></code> command packs packages directly from a conda environment file (<code class="docutils literal notranslate"><span class="pre">.yaml</span></code>). It can be executed on a different OS.</p>
+<section id="id2">
+<h3>Basic Usage<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>packing-packages<span class="w"> </span>pack<span class="w"> </span>yaml<span class="w"> </span>/path/to/environment.yaml
+</pre></div>
+</div>
+</section>
+<section id="id3">
+<h3>Options<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
+<section id="filepath-yaml-required">
+<h4><code class="docutils literal notranslate"><span class="pre">filepath_yaml</span></code> (required)<a class="headerlink" href="#filepath-yaml-required" title="Link to this heading">#</a></h4>
+<p>Specify the path to the conda environment file (<code class="docutils literal notranslate"><span class="pre">.yaml</span></code>).</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>packing-packages<span class="w"> </span>pack<span class="w"> </span>yaml<span class="w"> </span>environment.yaml
+</pre></div>
+</div>
+<p>The output structure is the same as the <code class="docutils literal notranslate"><span class="pre">pack</span></code> command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>.
+└── &lt;envname&gt;/          # Default: directory name from YAML or current directory
+    ├── conda/
+    │   └── *.tar.bz2, *.conda files
+    └── pypi/
+        └── *.whl, *.tar.gz files
+</pre></div>
+</div>
+</section>
+<section id="p-platform">
+<h4><code class="docutils literal notranslate"><span class="pre">-p,</span> <span class="pre">--platform</span></code><a class="headerlink" href="#p-platform" title="Link to this heading">#</a></h4>
+<p>Specify the platform. Choose one of the following:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">win-64</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">win-32</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">linux-64</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">linux-aarch64</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">linux-ppc64le</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">linux-s390x</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">osx-64</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">osx-arm64</span></code></p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>packing-packages<span class="w"> </span>pack<span class="w"> </span>yaml<span class="w"> </span>environment.yaml<span class="w"> </span>-p<span class="w"> </span>linux-64
+</pre></div>
+</div>
+</section>
+<section id="id4">
+<h4><code class="docutils literal notranslate"><span class="pre">-d,</span> <span class="pre">--dirpath-target</span></code><a class="headerlink" href="#id4" title="Link to this heading">#</a></h4>
+<p>Specify the path to the directory where the packed environment will be saved. Defaults to the current directory (<code class="docutils literal notranslate"><span class="pre">.</span></code>).</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>packing-packages<span class="w"> </span>pack<span class="w"> </span>yaml<span class="w"> </span>environment.yaml<span class="w"> </span>-p<span class="w"> </span>linux-64<span class="w"> </span>-d<span class="w"> </span>./packages
+</pre></div>
+</div>
+</section>
+<section id="id5">
+<h4><code class="docutils literal notranslate"><span class="pre">-D,</span> <span class="pre">--dry-run</span></code><a class="headerlink" href="#id5" title="Link to this heading">#</a></h4>
+<p>Perform a dry run without actually packing the environment.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>packing-packages<span class="w"> </span>pack<span class="w"> </span>yaml<span class="w"> </span>environment.yaml<span class="w"> </span>-p<span class="w"> </span>linux-64<span class="w"> </span>--dry-run
+</pre></div>
+</div>
+</section>
+<section id="id6">
+<h4><code class="docutils literal notranslate"><span class="pre">--diff-only</span></code><a class="headerlink" href="#id6" title="Link to this heading">#</a></h4>
+<p>Skip packages that already exist in the target directory and only download new packages.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>packing-packages<span class="w"> </span>pack<span class="w"> </span>yaml<span class="w"> </span>environment.yaml<span class="w"> </span>-p<span class="w"> </span>linux-64<span class="w"> </span>--diff-only
+</pre></div>
+</div>
+</section>
+<section id="id7">
+<h4><code class="docutils literal notranslate"><span class="pre">-e,</span> <span class="pre">--encoding</span></code><a class="headerlink" href="#id7" title="Link to this heading">#</a></h4>
+<p>Specify the encoding to use for subprocess execution.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>packing-packages<span class="w"> </span>pack<span class="w"> </span>yaml<span class="w"> </span>environment.yaml<span class="w"> </span>-p<span class="w"> </span>linux-64<span class="w"> </span>-e<span class="w"> </span>utf-8
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id8">
+<h3>Examples<a class="headerlink" href="#id8" title="Link to this heading">#</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Pack from a YAML file with platform specification</span>
+packing-packages<span class="w"> </span>pack<span class="w"> </span>yaml<span class="w"> </span>environment.yaml<span class="w"> </span>-p<span class="w"> </span>linux-64
+
+<span class="c1"># Specify output directory</span>
+packing-packages<span class="w"> </span>pack<span class="w"> </span>yaml<span class="w"> </span>environment.yaml<span class="w"> </span>-p<span class="w"> </span>linux-64<span class="w"> </span>-d<span class="w"> </span>./output
+
+<span class="c1"># Check with a dry run</span>
+packing-packages<span class="w"> </span>pack<span class="w"> </span>yaml<span class="w"> </span>environment.yaml<span class="w"> </span>-p<span class="w"> </span>linux-64<span class="w"> </span>--dry-run
+</pre></div>
+</div>
+</section>
+</section>
+<section id="install-command">
+<h2><code class="docutils literal notranslate"><span class="pre">install</span></code> Command<a class="headerlink" href="#install-command" title="Link to this heading">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">install</span></code> command installs packed packages into a conda environment.</p>
+<section id="id9">
+<h3>Basic Usage<a class="headerlink" href="#id9" title="Link to this heading">#</a></h3>
+<p>To install packages into the currently active conda environment:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>packing-packages<span class="w"> </span>install<span class="w"> </span>.
+</pre></div>
+</div>
+</section>
+<section id="id10">
+<h3>Options<a class="headerlink" href="#id10" title="Link to this heading">#</a></h3>
+<section id="dirpath-packages-positional-argument">
+<h4><code class="docutils literal notranslate"><span class="pre">DIRPATH_PACKAGES</span></code> (positional argument)<a class="headerlink" href="#dirpath-packages-positional-argument" title="Link to this heading">#</a></h4>
+<p>Specify the path to the directory containing packages to install. This should point to the directory containing the <code class="docutils literal notranslate"><span class="pre">conda/</span></code> and <code class="docutils literal notranslate"><span class="pre">pypi/</span></code> subdirectories (or the parent directory containing the environment-named folder). Defaults to the current directory (<code class="docutils literal notranslate"><span class="pre">.</span></code>) if not specified.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>packing-packages<span class="w"> </span>install<span class="w"> </span>/path/to/packages
+</pre></div>
+</div>
+<p><strong>Expected directory structure:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>/path/to/packages/          # Can be either:
+├── conda/                  # Option 1: Direct access to conda/ and pypi/
+│   └── *.tar.bz2, *.conda
+└── pypi/
+    └── *.whl, *.tar.gz
+
+# OR
+
+/path/to/packages/
+└── &lt;envname&gt;/              # Option 2: Environment-named directory
+    ├── conda/
+    │   └── *.tar.bz2, *.conda
+    └── pypi/
+        └── *.whl, *.tar.gz
+</pre></div>
+</div>
+<p>The command automatically detects and installs packages from both <code class="docutils literal notranslate"><span class="pre">conda/</span></code> and <code class="docutils literal notranslate"><span class="pre">pypi/</span></code> subdirectories.</p>
+</section>
+<section id="id11">
+<h4><code class="docutils literal notranslate"><span class="pre">-n,</span> <span class="pre">--env-name</span></code><a class="headerlink" href="#id11" title="Link to this heading">#</a></h4>
+<p>Specify the name of the conda environment where packages will be installed. If not specified, the currently active environment is used.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>packing-packages<span class="w"> </span>install<span class="w"> </span>.<span class="w"> </span>-n<span class="w"> </span>myenv
+</pre></div>
+</div>
+</section>
+<section id="id12">
+<h4><code class="docutils literal notranslate"><span class="pre">-e,</span> <span class="pre">--encoding</span></code><a class="headerlink" href="#id12" title="Link to this heading">#</a></h4>
+<p>Specify the encoding to use for subprocess execution. If not specified, the system default encoding is used.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>packing-packages<span class="w"> </span>install<span class="w"> </span>.<span class="w"> </span>-e<span class="w"> </span>utf-8
+</pre></div>
+</div>
+</section>
+<section id="generate-scripts">
+<h4><code class="docutils literal notranslate"><span class="pre">--generate-scripts</span></code><a class="headerlink" href="#generate-scripts" title="Link to this heading">#</a></h4>
+<p>Generate install scripts (<code class="docutils literal notranslate"><span class="pre">install_packages.bat</span></code>, <code class="docutils literal notranslate"><span class="pre">install_packages.sh</span></code>) instead of installing packages directly. These scripts can be distributed and used independently.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>packing-packages<span class="w"> </span>install<span class="w"> </span>./packages<span class="w"> </span>--generate-scripts
+</pre></div>
+</div>
+<p><strong>Generated files:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">install_packages.bat</span></code>: Windows batch script</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">install_packages.sh</span></code>: Unix/Linux shell script</p></li>
+</ul>
+<p><strong>Directory structure after generation:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>./packages/
+├── conda/
+│   └── *.tar.bz2, *.conda
+├── pypi/
+│   └── *.whl, *.tar.gz
+├── install_packages.bat      # Generated
+└── install_packages.sh       # Generated
+</pre></div>
+</div>
+</section>
+<section id="output-dir">
+<h4><code class="docutils literal notranslate"><span class="pre">--output-dir</span></code><a class="headerlink" href="#output-dir" title="Link to this heading">#</a></h4>
+<p>Specify the output directory for generated scripts. If not specified, scripts are written to the package directory.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>packing-packages<span class="w"> </span>install<span class="w"> </span>./packages<span class="w"> </span>--generate-scripts<span class="w"> </span>--output-dir<span class="w"> </span>./scripts
+</pre></div>
+</div>
+<p><strong>Resulting structure:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>./packages/
+├── conda/
+│   └── *.tar.bz2, *.conda
+└── pypi/
+    └── *.whl, *.tar.gz
+
+./scripts/
+├── install_packages.bat      # Generated here
+└── install_packages.sh       # Generated here
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id13">
+<h3>Examples<a class="headerlink" href="#id13" title="Link to this heading">#</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install packages into the current environment</span>
+packing-packages<span class="w"> </span>install<span class="w"> </span>.
+
+<span class="c1"># Install into a specific environment</span>
+packing-packages<span class="w"> </span>install<span class="w"> </span>./packages<span class="w"> </span>-n<span class="w"> </span>myenv
+
+<span class="c1"># Generate install scripts</span>
+packing-packages<span class="w"> </span>install<span class="w"> </span>./packages<span class="w"> </span>--generate-scripts
+
+<span class="c1"># Generate scripts with environment name and output directory specified</span>
+packing-packages<span class="w"> </span>install<span class="w"> </span>/path/to/packages<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--generate-scripts<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--env-name<span class="w"> </span>myenv<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--output-dir<span class="w"> </span>/path/to/output
+</pre></div>
+</div>
+</section>
+</section>
+<section id="practical-examples">
+<h2>Practical Examples<a class="headerlink" href="#practical-examples" title="Link to this heading">#</a></h2>
+<section id="source-device-online-environment">
+<h3>Source Device (Online Environment)<a class="headerlink" href="#source-device-online-environment" title="Link to this heading">#</a></h3>
+<ol class="arabic simple">
+<li><p>Activate the conda environment:</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>activate<span class="w"> </span>myenv
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>Install <code class="docutils literal notranslate"><span class="pre">packing-packages</span></code>:</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>packing-packages
+</pre></div>
+</div>
+<ol class="arabic simple" start="3">
+<li><p>Pack the environment:</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>packing_packages<span class="w"> </span>pack<span class="w"> </span>-d<span class="w"> </span>.
+</pre></div>
+</div>
+<p>This creates the following structure:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>.
+└── myenv/
+    ├── conda/
+    │   ├── python-3.11.0-h1234567_0.tar.bz2
+    │   ├── numpy-1.24.3-py311h1234567_0.conda
+    │   └── ...
+    └── pypi/
+        ├── requests-2.31.0-py3-none-any.whl
+        └── ...
+</pre></div>
+</div>
+<p>Or from a YAML file:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>packing_packages<span class="w"> </span>pack<span class="w"> </span>yaml<span class="w"> </span>environment.yaml<span class="w"> </span>-p<span class="w"> </span>linux-64
+</pre></div>
+</div>
+<p>This creates the same structure, but packages are downloaded for the specified platform (<code class="docutils literal notranslate"><span class="pre">linux-64</span></code> in this example).</p>
+</section>
+<section id="destination-device-offline-environment">
+<h3>Destination Device (Offline Environment)<a class="headerlink" href="#destination-device-offline-environment" title="Link to this heading">#</a></h3>
+<section id="method-1-using-standard-install-commands">
+<h4>Method 1: Using Standard Install Commands<a class="headerlink" href="#method-1-using-standard-install-commands" title="Link to this heading">#</a></h4>
+<p>Assuming you have the packed environment structure:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>./myenv/
+├── conda/
+│   └── *.tar.bz2, *.conda
+└── pypi/
+    └── *.whl, *.tar.gz
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create the environment</span>
+conda<span class="w"> </span>create<span class="w"> </span>-yn<span class="w"> </span>myenv<span class="w"> </span>--offline
+conda<span class="w"> </span>activate<span class="w"> </span>myenv
+
+<span class="c1"># Install conda packages</span>
+conda<span class="w"> </span>install<span class="w"> </span>--use-local<span class="w"> </span>--offline<span class="w"> </span>./myenv/conda/*
+
+<span class="c1"># Install pip packages</span>
+python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--no-deps<span class="w"> </span>--no-build-isolation<span class="w"> </span>./myenv/pypi/*
+</pre></div>
+</div>
+</section>
+<section id="method-2-using-generated-install-scripts">
+<h4>Method 2: Using Generated Install Scripts<a class="headerlink" href="#method-2-using-generated-install-scripts" title="Link to this heading">#</a></h4>
+<p>If you generated scripts on the source device using <code class="docutils literal notranslate"><span class="pre">--generate-scripts</span></code>, you’ll have:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>./myenv/
+├── conda/
+│   └── *.tar.bz2, *.conda
+├── pypi/
+│   └── *.whl, *.tar.gz
+├── install_packages.bat
+└── install_packages.sh
+</pre></div>
+</div>
+<p>On the destination device:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Windows</span>
+<span class="nb">cd</span><span class="w"> </span>myenv
+install_packages.bat
+
+<span class="c1"># Unix/Linux</span>
+<span class="nb">cd</span><span class="w"> </span>myenv
+./install_packages.sh
+</pre></div>
+</div>
+</section>
+<section id="method-3-using-packing-packages-install">
+<h4>Method 3: Using <code class="docutils literal notranslate"><span class="pre">packing-packages</span> <span class="pre">install</span></code><a class="headerlink" href="#method-3-using-packing-packages-install" title="Link to this heading">#</a></h4>
+<p>If <code class="docutils literal notranslate"><span class="pre">packing-packages</span></code> is installed on the destination device:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-yn<span class="w"> </span>myenv<span class="w"> </span>--offline
+conda<span class="w"> </span>activate<span class="w"> </span>myenv
+packing-packages<span class="w"> </span>install<span class="w"> </span>./myenv
+</pre></div>
+</div>
+<p>This automatically detects and installs packages from both <code class="docutils literal notranslate"><span class="pre">conda/</span></code> and <code class="docutils literal notranslate"><span class="pre">pypi/</span></code> subdirectories.</p>
+</section>
+</section>
+</section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading">#</a></h2>
+<section id="encoding-issues">
+<h3>Encoding Issues<a class="headerlink" href="#encoding-issues" title="Link to this heading">#</a></h3>
+<p>If encoding errors occur in certain environments, explicitly specify the encoding with the <code class="docutils literal notranslate"><span class="pre">-e</span></code> option:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>packing-packages<span class="w"> </span>pack<span class="w"> </span>-d<span class="w"> </span>.<span class="w"> </span>-e<span class="w"> </span>utf-8
+packing-packages<span class="w"> </span>install<span class="w"> </span>.<span class="w"> </span>-e<span class="w"> </span>utf-8
+</pre></div>
+</div>
+</section>
+<section id="proxy-configuration">
+<h3>Proxy Configuration<a class="headerlink" href="#proxy-configuration" title="Link to this heading">#</a></h3>
+<p>If you are in an environment that requires a proxy, set the environment variables:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">HTTP_PROXY</span><span class="o">=</span><span class="s2">&quot;your proxy&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">HTTPS_PROXY</span><span class="o">=</span><span class="s2">&quot;your proxy&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="handling-installation-errors">
+<h3>Handling Installation Errors<a class="headerlink" href="#handling-installation-errors" title="Link to this heading">#</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">packing-packages</span> <span class="pre">install</span></code> command skips packages that fail and continues. Check the error logs and install them manually if necessary.</p>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Tutorials</p>
+      </div>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#basic-usage">Basic Usage</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#display-help">Display Help</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#check-version">Check Version</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pack-command"><code class="docutils literal notranslate"><span class="pre">pack</span></code> Command</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Basic Usage</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#options">Options</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#n-env-name"><code class="docutils literal notranslate"><span class="pre">-n,</span> <span class="pre">--env-name</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#d-dirpath-target"><code class="docutils literal notranslate"><span class="pre">-d,</span> <span class="pre">--dirpath-target</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#d-dry-run"><code class="docutils literal notranslate"><span class="pre">-D,</span> <span class="pre">--dry-run</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diff-only"><code class="docutils literal notranslate"><span class="pre">--diff-only</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#e-encoding"><code class="docutils literal notranslate"><span class="pre">-e,</span> <span class="pre">--encoding</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#examples">Examples</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pack-yaml-command"><code class="docutils literal notranslate"><span class="pre">pack</span> <span class="pre">yaml</span></code> Command</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Basic Usage</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Options</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#filepath-yaml-required"><code class="docutils literal notranslate"><span class="pre">filepath_yaml</span></code> (required)</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#p-platform"><code class="docutils literal notranslate"><span class="pre">-p,</span> <span class="pre">--platform</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id4"><code class="docutils literal notranslate"><span class="pre">-d,</span> <span class="pre">--dirpath-target</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id5"><code class="docutils literal notranslate"><span class="pre">-D,</span> <span class="pre">--dry-run</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id6"><code class="docutils literal notranslate"><span class="pre">--diff-only</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id7"><code class="docutils literal notranslate"><span class="pre">-e,</span> <span class="pre">--encoding</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">Examples</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#install-command"><code class="docutils literal notranslate"><span class="pre">install</span></code> Command</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">Basic Usage</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">Options</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dirpath-packages-positional-argument"><code class="docutils literal notranslate"><span class="pre">DIRPATH_PACKAGES</span></code> (positional argument)</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id11"><code class="docutils literal notranslate"><span class="pre">-n,</span> <span class="pre">--env-name</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id12"><code class="docutils literal notranslate"><span class="pre">-e,</span> <span class="pre">--encoding</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#generate-scripts"><code class="docutils literal notranslate"><span class="pre">--generate-scripts</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#output-dir"><code class="docutils literal notranslate"><span class="pre">--output-dir</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id13">Examples</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#practical-examples">Practical Examples</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#source-device-online-environment">Source Device (Online Environment)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#destination-device-offline-environment">Destination Device (Offline Environment)</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#method-1-using-standard-install-commands">Method 1: Using Standard Install Commands</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#method-2-using-generated-install-scripts">Method 2: Using Generated Install Scripts</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#method-3-using-packing-packages-install">Method 3: Using <code class="docutils literal notranslate"><span class="pre">packing-packages</span> <span class="pre">install</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#troubleshooting">Troubleshooting</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#encoding-issues">Encoding Issues</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#proxy-configuration">Proxy Configuration</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#handling-installation-errors">Handling Installation Errors</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By yu9824
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2025, yu9824.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
