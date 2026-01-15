@@ -64,9 +64,9 @@ jobs:
       shell: bash -l {0}
       run: |
         if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
-          pytest
+          pytest -xs .
         elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-          pytest -m "os_windows or os_win_mac"
+          pytest -xs . -m "os_windows or os_win_mac"
         else
-          pytest -m "os_macos or os_win_mac"
+          pytest -xs . -m "os_macos or os_win_mac"
         fi
