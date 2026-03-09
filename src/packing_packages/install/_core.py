@@ -32,6 +32,15 @@ MAX_LETTER_LENGTH_BAT = 7000
 But it is recommended to leave some margin for safety.
 """
 
+PACKAGES_FOR_BUILD = (
+    "python",
+    "pip",
+    "setuptools",
+    "cython",
+    "hatchling",
+    "poetry",
+)
+
 
 def _get_conda_packages_path(
     dirpath_packages: Union[os.PathLike, str] = ".",
@@ -97,21 +106,72 @@ def _get_pypi_packages_path(
     )
 
 
-def _is_python_package(filepath: Path) -> bool:
-    """Check if the package is a python package.
+def _sort_packages_by_priority(
+    filepaths: tuple[Path, ...],
+) -> tuple[Path, ...]:
+    """Sort package file paths by priority.
 
     Parameters
     ----------
-    filepath : Path
-        Path to the package file
+    filepaths : tuple[Path, ...]
+        Tuple of package file paths to sort
 
     Returns
     -------
-    bool
-        True if the package name starts with "python-" or "python_", False otherwise
+    tuple[Path, ...]
+        Tuple of package file paths sorted by priority
     """
-    name_lower = filepath.name.lower()
-    return name_lower.startswith("python-") or name_lower.startswith("python_")
+    _priority = {name: i for i, name in enumerate(PACKAGES_FOR_BUILD)}
+    return tuple(
+        sorted(
+            filepaths,
+            key=lambda p: (
+                _priority.get(
+                    p.stem.replace("_", "-").lower().split("-")[0],
+                    len(PACKAGES_FOR_BUILD),
+                ),
+                p.name,
+            ),
+        )
+    )
+
+
+def get_pypi_sorted_packages_path(
+    dirpath_packages: Union[os.PathLike, str] = ".",
+) -> tuple[Path, ...]:
+    """Get paths of PyPI package files sorted by priority.
+
+    Parameters
+    ----------
+    dirpath_packages : Union[os.PathLike, str], optional
+        Directory path to search for PyPI packages, by default "."
+
+    Returns
+    -------
+    tuple[Path, ...]
+        Tuple of paths to PyPI package files sorted by priority
+    """
+    filepaths_pypi = _get_pypi_packages_path(dirpath_packages)
+    return _sort_packages_by_priority(filepaths_pypi)
+
+
+def get_conda_sorted_packages_path(
+    dirpath_packages: Union[os.PathLike, str] = ".",
+) -> tuple[Path, ...]:
+    """Get paths of conda package files sorted by priority.
+
+    Parameters
+    ----------
+    dirpath_packages : Union[os.PathLike, str], optional
+        Directory path to search for conda packages, by default "."
+
+    Returns
+    -------
+    tuple[Path, ...]
+        Tuple of paths to conda package files sorted by priority
+    """
+    filepaths_conda = _get_conda_packages_path(dirpath_packages)
+    return _sort_packages_by_priority(filepaths_conda)
 
 
 def install_packages(
@@ -150,14 +210,6 @@ def install_packages(
 
     tup_filepaths_conda = _get_conda_packages_path(dirpath_packages)
     tup_filepaths_pypi = _get_pypi_packages_path(dirpath_packages)
-
-    # Sort conda packages: python packages first
-    tup_filepaths_conda = tuple(
-        sorted(
-            tup_filepaths_conda,
-            key=lambda p: (not _is_python_package(p), p.name),
-        )
-    )
 
     list_filepaths_conda_failed: list[Path] = []
     # install conda packages
@@ -304,14 +356,6 @@ def generate_install_scripts(
     tup_filepaths_conda = _get_conda_packages_path(dirpath_packages)
     tup_filepaths_pypi = _get_pypi_packages_path(dirpath_packages)
 
-    # Sort conda packages: python packages first
-    tup_filepaths_conda_sorted = tuple(
-        sorted(
-            tup_filepaths_conda,
-            key=lambda p: (not _is_python_package(p), p.name),
-        )
-    )
-
     # Generate Windows batch file (.bat)
     bat_content = [
         "@echo off",
@@ -329,7 +373,7 @@ def generate_install_scripts(
         "call conda create -y -n %env_name% --offline --no-default-packages",
         "",
     ]
-    if tup_filepaths_conda_sorted:
+    if tup_filepaths_conda:
         bat_content.append("REM Install conda packages")
 
         tup_filepaths_conda_str = tuple(
@@ -337,7 +381,7 @@ def generate_install_scripts(
                 "{}".format(
                     str(PureWindowsPath(filepath.relative_to(output_dir)))
                 )
-                for filepath in tup_filepaths_conda_sorted
+                for filepath in tup_filepaths_conda
             ]
         )
         n_str = sum(map(lambda x: len(x), tup_filepaths_conda_str))
@@ -443,7 +487,7 @@ def generate_install_scripts(
         "conda create -y -n $env_name --offline --no-default-packages",
         "",
     ]
-    if tup_filepaths_conda_sorted:
+    if tup_filepaths_conda:
         sh_content.append("# Install conda packages")
         sh_content.append(
             " ".join(
@@ -460,7 +504,7 @@ def generate_install_scripts(
                     '\\\n    "{}"'.format(
                         filepath.relative_to(output_dir).as_posix()
                     )
-                    for filepath in tup_filepaths_conda_sorted
+                    for filepath in tup_filepaths_conda
                 ]
             )
         )
