@@ -456,7 +456,7 @@ def generate_install_scripts(
                         "--no-build-isolation",
                     ]
                     + [
-                        f"^\r\n    {filepath_str}"
+                        f"^\\\r\\\n    {filepath_str}"
                         for filepath_str in tup_filepaths_pypi_str[
                             n_packages_each_iter * i : n_packages_each_iter
                             * (i + 1)
