@@ -1,5 +1,6 @@
 import os
 import subprocess
+from collections.abc import Sequence
 from pathlib import Path, PureWindowsPath
 from typing import Optional, Union
 
@@ -155,6 +156,70 @@ def get_pypi_sorted_packages_path(
     return _sort_packages_by_priority(filepaths_pypi)
 
 
+def split_pypi_packages_by_priority(
+    packages_path: Sequence[Path],
+) -> tuple[tuple[Path, ...], tuple[Path, ...]]:
+    """Split PyPI package file paths by priority."""
+    list_prior_packages: list[Path] = []
+
+    for index_package in range(len(packages_path)):
+        package_path = packages_path[index_package]
+        package_path_stem = package_path.stem.replace("_", "-").lower()
+        package_name = package_path_stem.split("-")[0]
+
+        if package_name in PACKAGES_FOR_BUILD:
+            list_prior_packages.append(package_path)
+        else:
+            break
+
+    return (
+        tuple(list_prior_packages),
+        tuple(packages_path[index_package:]),
+    )
+
+
+def split_packages_path_for_bat(
+    packages_path: Sequence[Path], output_dir: Path
+) -> tuple[str, ...]:
+    """
+
+    Parameters
+    ----------
+    packages_path : Sequence[Path]
+        _description_
+    output_dir : Path
+        _description_
+
+    Returns
+    -------
+    tuple[str, ...]
+        _description_
+    """
+    tup_filepaths_conda_str = tuple(
+        [
+            "{}".format(str(PureWindowsPath(filepath.relative_to(output_dir))))
+            for filepath in packages_path
+        ]
+    )
+    n_str = sum(map(lambda x: len(x), tup_filepaths_conda_str))
+    _logger.debug(f"'{n_str}' letters.")
+
+    n_split = (n_str // MAX_LETTER_LENGTH_BAT) + bool(
+        n_str % MAX_LETTER_LENGTH_BAT
+    )
+    n_packages = len(tup_filepaths_conda_str)
+    n_packages_each_iter = n_packages // n_split + bool(n_packages % n_split)
+
+    return tuple(
+        " ^\r\n    ".join(
+            tup_filepaths_conda_str[
+                n_packages_each_iter * i : n_packages_each_iter * (i + 1)
+            ]
+        )
+        for i in range(n_split)
+    )
+
+
 def get_conda_sorted_packages_path(
     dirpath_packages: Union[os.PathLike, str] = ".",
 ) -> tuple[Path, ...]:
@@ -208,8 +273,8 @@ def install_packages(
 
     dirpath_packages = Path(dirpath_packages).resolve()
 
-    tup_filepaths_conda = _get_conda_packages_path(dirpath_packages)
-    tup_filepaths_pypi = _get_pypi_packages_path(dirpath_packages)
+    tup_filepaths_conda = get_conda_sorted_packages_path(dirpath_packages)
+    tup_filepaths_pypi = get_pypi_sorted_packages_path(dirpath_packages)
 
     list_filepaths_conda_failed: list[Path] = []
     # install conda packages
@@ -353,8 +418,8 @@ def generate_install_scripts(
         output_dir.mkdir(parents=True, exist_ok=True)
 
     # Find package files
-    tup_filepaths_conda = _get_conda_packages_path(dirpath_packages)
-    tup_filepaths_pypi = _get_pypi_packages_path(dirpath_packages)
+    tup_filepaths_conda = get_conda_sorted_packages_path(dirpath_packages)
+    tup_filepaths_pypi = get_pypi_sorted_packages_path(dirpath_packages)
 
     # Generate Windows batch file (.bat)
     bat_content = [
@@ -376,26 +441,9 @@ def generate_install_scripts(
     if tup_filepaths_conda:
         bat_content.append("REM Install conda packages")
 
-        tup_filepaths_conda_str = tuple(
-            [
-                "{}".format(
-                    str(PureWindowsPath(filepath.relative_to(output_dir)))
-                )
-                for filepath in tup_filepaths_conda
-            ]
-        )
-        n_str = sum(map(lambda x: len(x), tup_filepaths_conda_str))
-        _logger.debug(f"'{n_str}' letters.")
-
-        n_split = (n_str // MAX_LETTER_LENGTH_BAT) + bool(
-            n_str % MAX_LETTER_LENGTH_BAT
-        )
-        n_packages = len(tup_filepaths_conda_str)
-        n_packages_each_iter = n_packages // n_split + bool(
-            n_packages % n_split
-        )
-
-        for i in range(n_split):
+        for filepath_str in split_packages_path_for_bat(
+            tup_filepaths_conda, output_dir
+        ):
             bat_content.append(
                 " ".join(
                     [
@@ -407,13 +455,7 @@ def generate_install_scripts(
                         "%env_name%",
                         "--offline",
                         "--use-local",
-                    ]
-                    + [
-                        f"^\r\n    {filepath_str}"
-                        for filepath_str in tup_filepaths_conda_str[
-                            n_packages_each_iter * i : n_packages_each_iter
-                            * (i + 1)
-                        ]
+                        f"^\r\n    {filepath_str}",
                     ]
                 )
             )
@@ -422,26 +464,10 @@ def generate_install_scripts(
     if tup_filepaths_pypi:
         bat_content.append("REM Install PyPI packages")
 
-        tup_filepaths_pypi_str = tuple(
-            [
-                "{}".format(
-                    str(PureWindowsPath(filepath.relative_to(output_dir)))
-                )
-                for filepath in tup_filepaths_pypi
-            ]
+        tup_filepaths_pypi_prior, tup_filepaths_pypi_non_prior = (
+            split_pypi_packages_by_priority(tup_filepaths_pypi)
         )
-        n_str = sum(map(lambda x: len(x), tup_filepaths_pypi_str))
-        _logger.debug(f"'{n_str}' letters.")
-
-        n_split = (n_str // MAX_LETTER_LENGTH_BAT) + bool(
-            n_str % MAX_LETTER_LENGTH_BAT
-        )
-        n_packages = len(tup_filepaths_pypi_str)
-        n_packages_each_iter = n_packages // n_split + bool(
-            n_packages % n_split
-        )
-
-        for i in range(n_split):
+        for filepath_pypi_prior in tup_filepaths_pypi_prior:
             bat_content.append(
                 " ".join(
                     [
@@ -454,13 +480,32 @@ def generate_install_scripts(
                         "install",
                         "--no-deps",
                         "--no-build-isolation",
+                        str(
+                            PureWindowsPath(
+                                filepath_pypi_prior.relative_to(output_dir)
+                            )
+                        ),
                     ]
-                    + [
-                        f"^\r\n    {filepath_str}"
-                        for filepath_str in tup_filepaths_pypi_str[
-                            n_packages_each_iter * i : n_packages_each_iter
-                            * (i + 1)
-                        ]
+                )
+            )
+            bat_content.append("")
+
+        for filepath_str in split_packages_path_for_bat(
+            tup_filepaths_pypi_non_prior, output_dir
+        ):
+            bat_content.append(
+                " ".join(
+                    [
+                        "call",
+                        "conda",
+                        "run",
+                        "-n",
+                        "%env_name%",
+                        "pip",
+                        "install",
+                        "--no-deps",
+                        "--no-build-isolation",
+                        f"^\r\n    {filepath_str}",
                     ]
                 )
             )
@@ -512,6 +557,24 @@ def generate_install_scripts(
 
     if tup_filepaths_pypi:
         sh_content.append("# Install PyPI packages")
+        for filepath_pypi_prior in tup_filepaths_pypi_prior:
+            sh_content.append(
+                " ".join(
+                    [
+                        "conda",
+                        "run",
+                        "-n",
+                        "$env_name",
+                        "pip",
+                        "install",
+                        "--no-deps",
+                        "--no-build-isolation",
+                        filepath_pypi_prior.relative_to(output_dir).as_posix(),
+                    ]
+                )
+            )
+            sh_content.append("")
+
         sh_content.append(
             " ".join(
                 [
@@ -528,7 +591,7 @@ def generate_install_scripts(
                     '\\\n    "{}"'.format(
                         filepath.relative_to(output_dir).as_posix()
                     )
-                    for filepath in tup_filepaths_pypi
+                    for filepath in tup_filepaths_pypi_non_prior
                 ]
             )
         )
