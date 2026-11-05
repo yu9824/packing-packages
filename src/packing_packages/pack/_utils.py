@@ -178,6 +178,65 @@ def _resolve_pypi_requirement(package: Package) -> tuple[str, list[str]]:
     return f"{package.name}=={package.version}", []
 
 
+def _build_pip_command(
+    requirement: str,
+    dirpath_output_pypi: Path,
+    env_python_version: str,
+    dry_run: bool,
+    platform_pypi: Optional[str],
+    extra_args: list[str],
+) -> list[str]:
+    """Build the pip command to download (or dry-run install) a package.
+
+    Parameters
+    ----------
+    requirement : str
+        Requirement string (e.g. ``numpy==1.26.0``).
+    dirpath_output_pypi : Path
+        Output directory for PyPI packages.
+    env_python_version : str
+        Python version for the package.
+    dry_run : bool
+        If True, use ``pip install --dry-run`` instead of ``pip download``.
+    platform_pypi : str, optional
+        Platform specification for PyPI package.
+    extra_args : list[str]
+        Additional arguments appended to the command.
+
+    Returns
+    -------
+    list[str]
+        pip command.
+    """
+    dirpath_output = str(dirpath_output_pypi)
+    if dry_run:
+        subcommand = "install"
+        mode_args = ["--no-build-isolation", "--dry-run", "--force-reinstall"]
+        # For compatibility with original pack._core.py implementation
+        output_args = [] if platform_pypi else ["--target", dirpath_output]
+    else:
+        subcommand = "download"
+        mode_args = []
+        output_args = ["-d", dirpath_output]
+
+    platform_args = ["--platform", platform_pypi] if platform_pypi else []
+
+    return [
+        sys.executable,
+        "-m",
+        "pip",
+        subcommand,
+        requirement,
+        "--no-deps",
+        "--python-version",
+        env_python_version,
+        *mode_args,
+        *output_args,
+        *platform_args,
+        *extra_args,
+    ]
+
+
 def download_pypi_package(
     package: Package,
     dirpath_output_pypi: Path,
@@ -210,41 +269,14 @@ def download_pypi_package(
     """
     requirement, extra_args = _resolve_pypi_requirement(package)
 
-    if dry_run:
-        cmd = [
-            sys.executable,
-            "-m",
-            "pip",
-            "install",
-            requirement,
-            "--no-deps",
-            "--no-build-isolation",
-            "--python-version",
-            env_python_version,
-            "--dry-run",
-            "--force-reinstall",
-        ]
-        if platform_pypi:
-            cmd.extend(["--platform", platform_pypi])
-        else:
-            # For compatibility with original pack._core.py implementation
-            cmd.extend(["--target", dirpath_output_pypi.as_posix()])
-    else:
-        cmd = [
-            sys.executable,
-            "-m",
-            "pip",
-            "download",
-            requirement,
-            "--no-deps",
-            "--python-version",
-            env_python_version,
-            "-d",
-            str(dirpath_output_pypi),
-        ]
-        if platform_pypi:
-            cmd.extend(["--platform", platform_pypi])
-    cmd.extend(extra_args)
+    cmd = _build_pip_command(
+        requirement=requirement,
+        dirpath_output_pypi=dirpath_output_pypi,
+        env_python_version=env_python_version,
+        dry_run=dry_run,
+        platform_pypi=platform_pypi,
+        extra_args=extra_args,
+    )
 
     result_pip_download = subprocess.run(
         cmd,
