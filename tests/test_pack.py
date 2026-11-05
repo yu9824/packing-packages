@@ -41,4 +41,4 @@ def test_pack_torch(debug):
         check=True,
     )
 
-    packing_packages(dry_run=True, index_url=INDEX_URL_TORCH)
+    packing_packages(dry_run=True)
