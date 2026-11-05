@@ -22,7 +22,6 @@ def pack(args: argparse.Namespace) -> None:
         diff_only=args.diff_only,
         encoding=args.encoding,
         dry_run=args.dry_run,
-        index_url=args.index_url,
     )
 
 
@@ -68,12 +67,6 @@ def add_arguments_pack(parser: argparse.ArgumentParser):
         help=(
             "Only download packages that are not already present in the target directory."
         ),
-    )
-    parser.add_argument(
-        "--index-url",
-        default=None,
-        type=str,
-        help="Extra index-url (e.g. https://download.pytorch.org/whl/cu126)",
     )
     parser.set_defaults(func=pack)
 

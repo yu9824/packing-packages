@@ -1,8 +1,7 @@
-from __future__ import annotations
-
 import os
 import subprocess
 from pathlib import Path
+from typing import Optional, Union
 
 from packing_packages.helpers import (
     check_encoding,
@@ -45,12 +44,11 @@ _logger = get_child_logger(__name__)
 
 
 def packing_packages(
-    env_name: str | None = None,
-    dirpath_target: os.PathLike | str = ".",
+    env_name: Optional[str] = None,
+    dirpath_target: Union[os.PathLike, str] = ".",
     diff_only: bool = False,
-    encoding: str | None = None,
+    encoding: Optional[str] = None,
     dry_run: bool = False,
-    index_url: str | None = None,
 ) -> None:
     """packaging conda environment packages
 
@@ -66,8 +64,6 @@ def packing_packages(
         encoding for subprocess output
     dry_run : bool
         if True, do not download files
-    index_url : str | None
-        extra index url (e.g. https://download.pytorch.org/whl/cu126)
     """
 
     encoding = check_encoding(encoding)
@@ -138,7 +134,6 @@ def packing_packages(
                 env_python_version,
                 encoding,
                 dry_run,
-                index_url,
             ):
                 list_failed_packages.append(package)
             continue

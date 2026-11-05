@@ -3,8 +3,6 @@
 This module contains common utility functions used by both pack._core and pack.yaml._core.
 """
 
-from __future__ import annotations
-
 import os
 import re
 import subprocess
@@ -13,6 +11,7 @@ import urllib.request
 from datetime import datetime
 from pathlib import Path
 from shutil import copyfile
+from typing import Optional
 
 from packing_packages.constants import EXTENSIONS_CONDA
 from packing_packages.logging import get_child_logger
@@ -24,8 +23,6 @@ from ._types import (
 )
 
 _logger = get_child_logger(__name__)
-
-DEFAULT_INDEX_URL = "https://pypi.org/simple"
 
 
 def check_conda_installation() -> Path:
@@ -146,8 +143,7 @@ def download_pypi_package(
     env_python_version: str,
     encoding: str,
     dry_run: bool,
-    platform_pypi: str | None = None,
-    index_url: str | None = None,
+    platform_pypi: Optional[str] = None,
 ) -> bool:
     """Download a PyPI package.
 
@@ -165,9 +161,6 @@ def download_pypi_package(
         If True, do not download files.
     platform_pypi : str, optional
         Platform specification for PyPI package.
-    index_url : str | None, optional
-        extra index url (e.g. https://download.pytorch.org/whl/cu126)
-        If None, Use https://pypi.org/simple
 
     Returns
     -------
@@ -193,15 +186,6 @@ def download_pypi_package(
         else:
             # For compatibility with original pack._core.py implementation
             cmd.extend(["--target", dirpath_output_pypi.as_posix()])
-        if index_url:
-            cmd.extend(
-                [
-                    "--index-url",
-                    index_url,
-                    "--extra-index-url",
-                    DEFAULT_INDEX_URL,
-                ]
-            )
     else:
         cmd = [
             sys.executable,
@@ -217,15 +201,6 @@ def download_pypi_package(
         ]
         if platform_pypi:
             cmd.extend(["--platform", platform_pypi])
-        if index_url:
-            cmd.extend(
-                [
-                    "--index-url",
-                    index_url,
-                    "--extra-index-url",
-                    DEFAULT_INDEX_URL,
-                ]
-            )
 
     result_pip_download = subprocess.run(
         cmd,
@@ -247,8 +222,8 @@ def download_conda_package(
     dirpath_output_conda: Path,
     encoding: str,
     dry_run: bool,
-    platform_conda: str | None = None,
-    channels: list[str] | None = None,
+    platform_conda: Optional[str] = None,
+    channels: Optional[list[str]] = None,
 ) -> bool:
     """Download a conda package.
 
