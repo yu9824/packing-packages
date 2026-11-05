@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import importlib.util
 import os
 import re
@@ -14,7 +16,7 @@ from logging import (
     getLogger,
 )
 from types import TracebackType
-from typing import Optional, TypeVar
+from typing import TypeVar
 
 HandlerType = TypeVar("HandlerType", bound=Handler)
 
@@ -47,7 +49,7 @@ def _color_supported() -> bool:
         return True
 
 
-_default_handler: Optional[StreamHandler] = None
+_default_handler: StreamHandler | None = None
 """default root logger handler
 
 if not configured, None
@@ -96,7 +98,7 @@ def _get_library_name() -> str:
     return __name__.split(".")[0]
 
 
-def create_default_formatter(use_color: Optional[bool] = None) -> Formatter:
+def create_default_formatter(use_color: bool | None = None) -> Formatter:
     """
     Create a default log formatter with optional color support.
 
@@ -113,7 +115,7 @@ def create_default_formatter(use_color: Optional[bool] = None) -> Formatter:
 
     Parameters
     ----------
-    use_color : Optional[bool], optional
+    use_color : bool, optional
         Whether to use color in the formatter. If `None` (default), color is
         used only if the environment supports it. If `False`, color is never
         used. If `True`, color is used if available (environment still checked).
@@ -155,7 +157,7 @@ This formatter is either colorized or plain depending on environment support.
 
 def get_handler(
     handler: HandlerType,
-    formatter: Optional[Formatter] = None,
+    formatter: Formatter | None = None,
     level: int = NOTSET,
 ) -> HandlerType:
     """Configure a log handler with a formatter and log level.
@@ -175,7 +177,7 @@ def get_handler(
     handler : HandlerType
         The log handler instance to configure (e.g., `StreamHandler`,
         `FileHandler`). The handler will be modified in place.
-    formatter : Optional[Formatter], optional
+    formatter : Formatter, optional
         The formatter to apply to the handler. If `None`, an appropriate
         default formatter is used based on the handler type (see
         `create_default_formatter`). Default is `None`.
@@ -483,9 +485,9 @@ class catch_default_handler:
 
     def __exit__(
         self,
-        exc_type: "Optional[type[Exception]]",
-        exc_value: Optional[Exception],
-        traceback: Optional[TracebackType],
+        exc_type: type[Exception] | None,
+        exc_value: Exception | None,
+        traceback: TracebackType | None,
     ) -> None:
         """Exit the context and restore the default handler."""
         enable_default_handler()
@@ -538,20 +540,20 @@ class catch_all_handler:
 
     def __exit__(
         self,
-        exc_type: "Optional[type[Exception]]",
-        exc_value: Optional[Exception],
-        traceback: Optional[TracebackType],
+        exc_type: type[Exception] | None,
+        exc_value: Exception | None,
+        traceback: TracebackType | None,
     ) -> None:
         """
         Exit the context and restore all previously removed handlers.
 
         Parameters
         ----------
-        exc_type : Optional[type[Exception]]
+        exc_type : type[Exception] | None
             The exception type, if any exception occurred.
-        exc_value : Optional[Exception]
+        exc_value : Exception | None
             The exception value, if any exception occurred.
-        traceback : Optional[TracebackType]
+        traceback : TracebackType | None
             The traceback, if any exception occurred.
 
         Returns

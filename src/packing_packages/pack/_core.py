@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import os
 import subprocess
 from pathlib import Path
-from typing import Optional, Union
 
 from packing_packages.helpers import (
     check_encoding,
@@ -44,10 +45,10 @@ _logger = get_child_logger(__name__)
 
 
 def packing_packages(
-    env_name: Optional[str] = None,
-    dirpath_target: Union[os.PathLike, str] = ".",
+    env_name: str | None = None,
+    dirpath_target: os.PathLike | str = ".",
     diff_only: bool = False,
-    encoding: Optional[str] = None,
+    encoding: str | None = None,
     dry_run: bool = False,
 ) -> None:
     """packaging conda environment packages

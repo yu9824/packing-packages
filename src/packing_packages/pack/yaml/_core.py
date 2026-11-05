@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import os
 from pathlib import Path
-from typing import Literal, Optional, Union
+from typing import Literal
 
 from packing_packages.helpers import check_encoding, is_installed
 from packing_packages.logging import get_child_logger
@@ -30,24 +32,23 @@ if is_installed("yaml"):
     import yaml  # type: ignore
 
     def packing_packages_from_yaml(
-        filepath_yaml: Union[os.PathLike, str],
+        filepath_yaml: os.PathLike | str,
         *,
-        platform: Optional[
-            Literal[
-                "win-64",
-                "win-32",
-                "linux-64",
-                "linux-aarch64",
-                "linux-ppc64le",
-                "linux-s390x",
-                "osx-64",
-                "osx-arm64",
-            ]
-        ] = None,
-        dirpath_target: Union[os.PathLike, str] = ".",
+        platform: Literal[
+            "win-64",
+            "win-32",
+            "linux-64",
+            "linux-aarch64",
+            "linux-ppc64le",
+            "linux-s390x",
+            "osx-64",
+            "osx-arm64",
+        ]
+        | None = None,
+        dirpath_target: os.PathLike | str = ".",
         diff_only: bool = False,
         dry_run: bool = False,
-        encoding: Optional[str] = None,
+        encoding: str | None = None,
     ) -> None:
         """Package Python dependencies from a YAML file for a specific platform.
 
@@ -119,7 +120,7 @@ if is_installed("yaml"):
         dirpath_output_pypi = dirpath_output / "pypi"
         dirpath_output_conda = dirpath_output / "conda"
 
-        env_python_version: Optional[str] = None
+        env_python_version: str | None = None
         list_packages: list[Package] = list()
         for package_str in dict_yaml["dependencies"]:
             if isinstance(package_str, dict):

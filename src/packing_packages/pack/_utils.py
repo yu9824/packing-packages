@@ -14,7 +14,6 @@ import urllib.request
 from datetime import datetime
 from pathlib import Path
 from shutil import copyfile
-from typing import Optional
 
 from packing_packages.constants import EXTENSIONS_CONDA
 from packing_packages.logging import get_child_logger
@@ -151,7 +150,7 @@ def _is_valid_url(url: str) -> bool:
     return False
 
 
-def _resolve_pypi_requirement(package: Package) -> tuple[str, Optional[str]]:
+def _resolve_pypi_requirement(package: Package) -> tuple[str, str | None]:
     """Resolve the pip requirement string and index URL for a package.
 
     For PyTorch packages with a local version label (e.g. ``2.1.0+cu118``),
@@ -166,7 +165,7 @@ def _resolve_pypi_requirement(package: Package) -> tuple[str, Optional[str]]:
 
     Returns
     -------
-    tuple[str, Optional[str]]
+    tuple[str, str | None]
         Requirement string (e.g. ``torch==2.1.0``) and index URL
         (None means the default index).
     """
@@ -184,8 +183,8 @@ def _build_pip_command(
     dirpath_output_pypi: Path,
     env_python_version: str,
     dry_run: bool,
-    platform_pypi: Optional[str],
-    index_url: Optional[str],
+    platform_pypi: str | None,
+    index_url: str | None,
 ) -> list[str]:
     """Build the pip command to download (or dry-run install) a package.
 
@@ -245,7 +244,7 @@ def download_pypi_package(
     env_python_version: str,
     encoding: str,
     dry_run: bool,
-    platform_pypi: Optional[str] = None,
+    platform_pypi: str | None = None,
 ) -> bool:
     """Download a PyPI package.
 
@@ -300,8 +299,8 @@ def download_conda_package(
     dirpath_output_conda: Path,
     encoding: str,
     dry_run: bool,
-    platform_conda: Optional[str] = None,
-    channels: Optional[list[str]] = None,
+    platform_conda: str | None = None,
+    channels: list[str] | None = None,
 ) -> bool:
     """Download a conda package.
 

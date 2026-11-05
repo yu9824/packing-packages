@@ -1,8 +1,9 @@
+from __future__ import annotations
+
 import argparse
 import sys
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Optional
 
 from packing_packages.helpers import check_env_name
 from packing_packages.pack._core import packing_packages
@@ -71,7 +72,7 @@ def add_arguments_pack(parser: argparse.ArgumentParser):
     parser.set_defaults(func=pack)
 
 
-def main(cli_args: Sequence[str], prog: Optional[str] = None) -> None:
+def main(cli_args: Sequence[str], prog: str | None = None) -> None:
     """Main function to parse arguments and call the packing function."""
     parser = argparse.ArgumentParser(
         prog=prog, description="pack conda environment"

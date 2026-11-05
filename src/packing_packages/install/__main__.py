@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import argparse
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Optional
 
 from packing_packages.install._core import (
     generate_install_scripts,
@@ -84,7 +85,7 @@ def add_arguments_install(parser: argparse.ArgumentParser) -> None:
     parser.set_defaults(func=install)
 
 
-def main(cli_args: Sequence[str], prog: Optional[str] = None) -> None:
+def main(cli_args: Sequence[str], prog: str | None = None) -> None:
     """Main function to parse arguments and call the install function."""
     parser = argparse.ArgumentParser(
         prog=prog, description="Install packages in the conda environment"

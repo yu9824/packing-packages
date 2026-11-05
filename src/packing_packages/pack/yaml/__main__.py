@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import argparse
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Optional
 
 from packing_packages.pack.yaml._core import packing_packages_from_yaml
 
@@ -80,7 +81,7 @@ def add_arguments_pack_from_yaml(parser: argparse.ArgumentParser):
     parser.set_defaults(func=pack_from_yaml)
 
 
-def main(cli_args: Sequence[str], prog: Optional[str] = None) -> None:
+def main(cli_args: Sequence[str], prog: str | None = None) -> None:
     parser = argparse.ArgumentParser(prog=prog, description="")
     add_arguments_pack_from_yaml(parser)
     args = parser.parse_args(cli_args)
