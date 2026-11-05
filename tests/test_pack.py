@@ -23,11 +23,10 @@ def test_pack_yaml(debug):
     )
 
 
-@pytest.mark.os_win_mac
+@pytest.mark.os_linux
 @pytest.mark.skipif(
-    not sys.platform.startswith("darwin")
-    and not sys.platform.startswith("win"),
-    reason="macOS or Windows only",
+    not sys.platform.startswith("linux"),
+    reason="Linux only",
 )
 def test_pack_torch(debug):
     subprocess.run(
