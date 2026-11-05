@@ -1,5 +1,5 @@
 {
-    "ruff.configuration": "${workspaceFolder}/pyproject.toml",
+    "ruff.configuration": "${workspaceFolder}/ruff.toml",
     "python-envs.defaultEnvManager": "ms-python.python:conda",
     "python-envs.defaultPackageManager": "ms-python.python:conda"
 }
