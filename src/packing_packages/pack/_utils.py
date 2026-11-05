@@ -151,8 +151,8 @@ def _is_valid_url(url: str) -> bool:
     return False
 
 
-def _resolve_pypi_requirement(package: Package) -> tuple[str, list[str]]:
-    """Resolve the pip requirement string and extra arguments for a package.
+def _resolve_pypi_requirement(package: Package) -> tuple[str, Optional[str]]:
+    """Resolve the pip requirement string and index URL for a package.
 
     For PyTorch packages with a local version label (e.g. ``2.1.0+cu118``),
     use the PyTorch index (``https://download.pytorch.org/whl/cu118``) if it
@@ -166,16 +166,17 @@ def _resolve_pypi_requirement(package: Package) -> tuple[str, list[str]]:
 
     Returns
     -------
-    tuple[str, list[str]]
-        Requirement string (e.g. ``torch==2.1.0``) and extra pip arguments.
+    tuple[str, Optional[str]]
+        Requirement string (e.g. ``torch==2.1.0``) and index URL
+        (None means the default index).
     """
     if package.name.startswith("torch") and "+" in package.version:
         version, _, device = package.version.partition("+")
         index_url_torch = f"https://download.pytorch.org/whl/{device}"
         if _is_valid_url(index_url_torch):
-            return f"{package.name}=={version}", ["--index-url", index_url_torch]
+            return f"{package.name}=={version}", index_url_torch
 
-    return f"{package.name}=={package.version}", []
+    return f"{package.name}=={package.version}", None
 
 
 def _build_pip_command(
@@ -184,7 +185,7 @@ def _build_pip_command(
     env_python_version: str,
     dry_run: bool,
     platform_pypi: Optional[str],
-    extra_args: list[str],
+    index_url: Optional[str],
 ) -> list[str]:
     """Build the pip command to download (or dry-run install) a package.
 
@@ -200,8 +201,8 @@ def _build_pip_command(
         If True, use ``pip install --dry-run`` instead of ``pip download``.
     platform_pypi : str, optional
         Platform specification for PyPI package.
-    extra_args : list[str]
-        Additional arguments appended to the command.
+    index_url : str, optional
+        Base URL of the package index. If None, use the default index.
 
     Returns
     -------
@@ -220,6 +221,7 @@ def _build_pip_command(
         output_args = ["-d", dirpath_output]
 
     platform_args = ["--platform", platform_pypi] if platform_pypi else []
+    index_url_args = ["--index-url", index_url] if index_url else []
 
     return [
         sys.executable,
@@ -233,7 +235,7 @@ def _build_pip_command(
         *mode_args,
         *output_args,
         *platform_args,
-        *extra_args,
+        *index_url_args,
     ]
 
 
@@ -267,7 +269,7 @@ def download_pypi_package(
     bool
         True if download succeeded, False otherwise.
     """
-    requirement, extra_args = _resolve_pypi_requirement(package)
+    requirement, index_url = _resolve_pypi_requirement(package)
 
     cmd = _build_pip_command(
         requirement=requirement,
@@ -275,7 +277,7 @@ def download_pypi_package(
         env_python_version=env_python_version,
         dry_run=dry_run,
         platform_pypi=platform_pypi,
-        extra_args=extra_args,
+        index_url=index_url,
     )
 
     result_pip_download = subprocess.run(
