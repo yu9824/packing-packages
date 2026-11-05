@@ -3,10 +3,13 @@
 This module contains common utility functions used by both pack._core and pack.yaml._core.
 """
 
+from __future__ import annotations
+
 import os
 import re
 import subprocess
 import sys
+import urllib.error
 import urllib.request
 from datetime import datetime
 from pathlib import Path
@@ -137,6 +140,44 @@ def check_python_version(env_python_version: str) -> None:
         )
 
 
+def _is_valid_url(url: str) -> bool:
+    try:
+        with urllib.request.urlopen(url, timeout=5) as response:
+            if response.status == 200:
+                return True
+    except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError):
+        pass
+
+    return False
+
+
+def _resolve_pypi_requirement(package: Package) -> tuple[str, list[str]]:
+    """Resolve the pip requirement string and extra arguments for a package.
+
+    For PyTorch packages with a local version label (e.g. ``2.1.0+cu118``),
+    use the PyTorch index (``https://download.pytorch.org/whl/cu118``) if it
+    is reachable. Otherwise, keep the original version so that pip fails
+    explicitly.
+
+    Parameters
+    ----------
+    package : Package
+        Package to resolve.
+
+    Returns
+    -------
+    tuple[str, list[str]]
+        Requirement string (e.g. ``torch==2.1.0``) and extra pip arguments.
+    """
+    if package.name.startswith("torch") and "+" in package.version:
+        version, _, device = package.version.partition("+")
+        index_url_torch = f"https://download.pytorch.org/whl/{device}"
+        if _is_valid_url(index_url_torch):
+            return f"{package.name}=={version}", ["--index-url", index_url_torch]
+
+    return f"{package.name}=={package.version}", []
+
+
 def download_pypi_package(
     package: Package,
     dirpath_output_pypi: Path,
@@ -167,13 +208,15 @@ def download_pypi_package(
     bool
         True if download succeeded, False otherwise.
     """
+    requirement, extra_args = _resolve_pypi_requirement(package)
+
     if dry_run:
         cmd = [
             sys.executable,
             "-m",
             "pip",
             "install",
-            f"{package.name}=={package.version}",
+            requirement,
             "--no-deps",
             "--no-build-isolation",
             "--python-version",
@@ -192,7 +235,7 @@ def download_pypi_package(
             "-m",
             "pip",
             "download",
-            f"{package.name}=={package.version}",
+            requirement,
             "--no-deps",
             "--python-version",
             env_python_version,
@@ -201,6 +244,7 @@ def download_pypi_package(
         ]
         if platform_pypi:
             cmd.extend(["--platform", platform_pypi])
+    cmd.extend(extra_args)
 
     result_pip_download = subprocess.run(
         cmd,
