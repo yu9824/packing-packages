@@ -16,9 +16,10 @@ dependencies into a specified directory.
 
 """
 
-__version__ = "0.4.2"
+from ._version import __version__  # noqa: F401
+
 __license__ = "MIT"
 __author__ = "yu9824"
-__copyright__ = "Copyright © 2025 yu9824"
+__copyright__ = "Copyright © 2026 yu9824"
 
 # __all__ = ()

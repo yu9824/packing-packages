@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import argparse
 import sys
 from collections.abc import Sequence
-from typing import Optional
 
 from packing_packages import __version__
 from packing_packages.install.__main__ import add_arguments_install
@@ -11,7 +12,7 @@ from packing_packages.pack.yaml.__main__ import add_arguments_pack_from_yaml
 __all__ = ("main",)
 
 
-def main(cli_args: Sequence[str], prog: Optional[str] = None) -> None:
+def main(cli_args: Sequence[str], prog: str | None = None) -> None:
     parser = argparse.ArgumentParser(prog=prog, description="")
     parser.add_argument(
         "-v",

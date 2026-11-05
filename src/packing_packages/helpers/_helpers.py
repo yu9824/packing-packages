@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 import importlib.util
 import inspect
 import os
 import subprocess
 import sys
 from collections.abc import Callable, Iterable, Iterator
-from typing import Any, Optional, TypeVar
+from typing import Any, TypeVar
 
 from packing_packages.logging import get_child_logger
 
@@ -71,7 +73,7 @@ class dummy_tqdm(Iterable[T]):
         return
 
 
-def check_encoding(encoding: Optional[str]) -> str:
+def check_encoding(encoding: str | None) -> str:
     """Check if the encoding is valid.
 
     Parameters
@@ -94,7 +96,7 @@ def check_encoding(encoding: Optional[str]) -> str:
         raise ValueError(f"Invalid encoding: {encoding}") from e
 
 
-def get_env_list(encoding: Optional[str] = None) -> set[str]:
+def get_env_list(encoding: str | None = None) -> set[str]:
     """Get list of conda environments.
 
     Parameters
@@ -125,7 +127,7 @@ def get_env_list(encoding: Optional[str] = None) -> set[str]:
 
 
 def check_env_name(
-    env_name: Optional[str] = None, encoding: Optional[str] = None
+    env_name: str | None = None, encoding: str | None = None
 ) -> str:
     """Check if the environment name is valid.
 

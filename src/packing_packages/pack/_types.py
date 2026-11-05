@@ -1,9 +1,11 @@
 """Type definitions and utility functions for packages."""
 
+from __future__ import annotations
+
 import os
 import re
 from pathlib import Path
-from typing import NamedTuple, Union
+from typing import NamedTuple
 
 from packing_packages.constants import EXTENSIONS_CONDA, EXTENSIONS_PYPI
 
@@ -30,7 +32,7 @@ class Package(NamedTuple):
 
 
 def get_existing_packages_conda(
-    dirpath_output: Union[os.PathLike, str],
+    dirpath_output: os.PathLike | str,
 ) -> set[tuple[str, str, str]]:
     """get existing conda packages in the output directory
 
@@ -63,7 +65,7 @@ def get_existing_packages_conda(
 
 
 def get_existing_packages_pypi(
-    dirpath_output: Union[os.PathLike, str],
+    dirpath_output: os.PathLike | str,
 ) -> set[tuple[str, str]]:
     """get existing pypi packages in the output directory
 

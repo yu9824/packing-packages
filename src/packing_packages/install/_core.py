@@ -1,8 +1,9 @@
+from __future__ import annotations
+
 import os
 import subprocess
 from collections.abc import Sequence
 from pathlib import Path, PureWindowsPath
-from typing import Optional, Union
 
 from packing_packages.constants import (
     EXTENSIONS_CONDA,
@@ -44,13 +45,13 @@ PACKAGES_FOR_BUILD = (
 
 
 def _get_conda_packages_path(
-    dirpath_packages: Union[os.PathLike, str] = ".",
+    dirpath_packages: os.PathLike | str = ".",
 ) -> tuple[Path, ...]:
     """Get paths of conda package files.
 
     Parameters
     ----------
-    dirpath_packages : Union[os.PathLike, str], optional
+    dirpath_packages : os.PathLike | str, optional
         Directory path to search for conda packages, by default "."
 
     Returns
@@ -76,13 +77,13 @@ def _get_conda_packages_path(
 
 
 def _get_pypi_packages_path(
-    dirpath_packages: Union[os.PathLike, str] = ".",
+    dirpath_packages: os.PathLike | str = ".",
 ) -> tuple[Path, ...]:
     """Get paths of PyPI package files.
 
     Parameters
     ----------
-    dirpath_packages : Union[os.PathLike, str], optional
+    dirpath_packages : os.PathLike | str, optional
         Directory path to search for PyPI packages, by default "."
 
     Returns
@@ -138,13 +139,13 @@ def _sort_packages_by_priority(
 
 
 def get_pypi_sorted_packages_path(
-    dirpath_packages: Union[os.PathLike, str] = ".",
+    dirpath_packages: os.PathLike | str = ".",
 ) -> tuple[Path, ...]:
     """Get paths of PyPI package files sorted by priority.
 
     Parameters
     ----------
-    dirpath_packages : Union[os.PathLike, str], optional
+    dirpath_packages : os.PathLike | str, optional
         Directory path to search for PyPI packages, by default "."
 
     Returns
@@ -221,13 +222,13 @@ def split_packages_path_for_bat(
 
 
 def get_conda_sorted_packages_path(
-    dirpath_packages: Union[os.PathLike, str] = ".",
+    dirpath_packages: os.PathLike | str = ".",
 ) -> tuple[Path, ...]:
     """Get paths of conda package files sorted by priority.
 
     Parameters
     ----------
-    dirpath_packages : Union[os.PathLike, str], optional
+    dirpath_packages : os.PathLike | str, optional
         Directory path to search for conda packages, by default "."
 
     Returns
@@ -240,9 +241,9 @@ def get_conda_sorted_packages_path(
 
 
 def install_packages(
-    env_name: Optional[str] = None,
-    dirpath_packages: Union[str, os.PathLike] = ".",
-    encoding: Optional[str] = None,
+    env_name: str | None = None,
+    dirpath_packages: str | os.PathLike = ".",
+    encoding: str | None = None,
 ) -> None:
     """Install conda and PyPI packages.
 
@@ -254,7 +255,7 @@ def install_packages(
     ----------
     env_name : str, optional
         Conda environment name. If None, uses the current conda environment, by default None
-    dirpath_packages : Union[str, os.PathLike], optional
+    dirpath_packages : str | os.PathLike, optional
         Directory path containing packages to install, by default "."
     encoding : str, optional
         Encoding for subprocess output. If None, uses system default encoding, by default None
@@ -365,10 +366,10 @@ def install_packages(
 
 
 def generate_install_scripts(
-    dirpath_packages: Union[str, os.PathLike] = ".",
-    env_name: Optional[str] = None,
-    output_dir: Optional[Union[str, os.PathLike]] = None,
-    encoding: Optional[str] = None,
+    dirpath_packages: str | os.PathLike = ".",
+    env_name: str | None = None,
+    output_dir: str | os.PathLike | None = None,
+    encoding: str | None = None,
 ) -> dict[str, Path]:
     """Generate install scripts for Windows and Unix/Linux.
 
@@ -378,11 +379,11 @@ def generate_install_scripts(
 
     Parameters
     ----------
-    dirpath_packages : Union[str, os.PathLike], optional
+    dirpath_packages : str | os.PathLike, optional
         Directory path containing packages, by default "."
     env_name : str, optional
         Conda environment name. If None, uses directory name of dirpath_packages, by default None
-    output_dir : Union[str, os.PathLike], optional
+    output_dir : str | os.PathLike, optional
         Output directory for generated scripts. If None, uses dirpath_packages, by default None
     encoding : str, optional
         Encoding for generated script files. If None, uses system default encoding, by default None

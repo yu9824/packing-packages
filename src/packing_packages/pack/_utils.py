@@ -3,15 +3,17 @@
 This module contains common utility functions used by both pack._core and pack.yaml._core.
 """
 
+from __future__ import annotations
+
 import os
 import re
 import subprocess
 import sys
+import urllib.error
 import urllib.request
 from datetime import datetime
 from pathlib import Path
 from shutil import copyfile
-from typing import Optional
 
 from packing_packages.constants import EXTENSIONS_CONDA
 from packing_packages.logging import get_child_logger
@@ -137,13 +139,112 @@ def check_python_version(env_python_version: str) -> None:
         )
 
 
+def _is_valid_url(url: str) -> bool:
+    try:
+        with urllib.request.urlopen(url, timeout=5) as response:
+            if response.status == 200:
+                return True
+    except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError):
+        pass
+
+    return False
+
+
+def _resolve_pypi_requirement(package: Package) -> tuple[str, str | None]:
+    """Resolve the pip requirement string and index URL for a package.
+
+    For PyTorch packages with a local version label (e.g. ``2.1.0+cu118``),
+    use the PyTorch index (``https://download.pytorch.org/whl/cu118``) if it
+    is reachable. Otherwise, keep the original version so that pip fails
+    explicitly.
+
+    Parameters
+    ----------
+    package : Package
+        Package to resolve.
+
+    Returns
+    -------
+    tuple[str, str | None]
+        Requirement string (e.g. ``torch==2.1.0``) and index URL
+        (None means the default index).
+    """
+    if package.name.startswith("torch") and "+" in package.version:
+        version, _, device = package.version.partition("+")
+        index_url_torch = f"https://download.pytorch.org/whl/{device}"
+        if _is_valid_url(index_url_torch):
+            return f"{package.name}=={version}", index_url_torch
+
+    return f"{package.name}=={package.version}", None
+
+
+def _build_pip_command(
+    requirement: str,
+    dirpath_output_pypi: Path,
+    env_python_version: str,
+    dry_run: bool,
+    platform_pypi: str | None,
+    index_url: str | None,
+) -> list[str]:
+    """Build the pip command to download (or dry-run install) a package.
+
+    Parameters
+    ----------
+    requirement : str
+        Requirement string (e.g. ``numpy==1.26.0``).
+    dirpath_output_pypi : Path
+        Output directory for PyPI packages.
+    env_python_version : str
+        Python version for the package.
+    dry_run : bool
+        If True, use ``pip install --dry-run`` instead of ``pip download``.
+    platform_pypi : str, optional
+        Platform specification for PyPI package.
+    index_url : str, optional
+        Base URL of the package index. If None, use the default index.
+
+    Returns
+    -------
+    list[str]
+        pip command.
+    """
+    dirpath_output = str(dirpath_output_pypi)
+    if dry_run:
+        subcommand = "install"
+        mode_args = ["--no-build-isolation", "--dry-run", "--force-reinstall"]
+        # For compatibility with original pack._core.py implementation
+        output_args = [] if platform_pypi else ["--target", dirpath_output]
+    else:
+        subcommand = "download"
+        mode_args = []
+        output_args = ["-d", dirpath_output]
+
+    platform_args = ["--platform", platform_pypi] if platform_pypi else []
+    index_url_args = ["--index-url", index_url] if index_url else []
+
+    return [
+        sys.executable,
+        "-m",
+        "pip",
+        subcommand,
+        requirement,
+        "--no-deps",
+        "--python-version",
+        env_python_version,
+        *mode_args,
+        *output_args,
+        *platform_args,
+        *index_url_args,
+    ]
+
+
 def download_pypi_package(
     package: Package,
     dirpath_output_pypi: Path,
     env_python_version: str,
     encoding: str,
     dry_run: bool,
-    platform_pypi: Optional[str] = None,
+    platform_pypi: str | None = None,
 ) -> bool:
     """Download a PyPI package.
 
@@ -167,40 +268,16 @@ def download_pypi_package(
     bool
         True if download succeeded, False otherwise.
     """
-    if dry_run:
-        cmd = [
-            sys.executable,
-            "-m",
-            "pip",
-            "install",
-            f"{package.name}=={package.version}",
-            "--no-deps",
-            "--no-build-isolation",
-            "--python-version",
-            env_python_version,
-            "--dry-run",
-            "--force-reinstall",
-        ]
-        if platform_pypi:
-            cmd.extend(["--platform", platform_pypi])
-        else:
-            # For compatibility with original pack._core.py implementation
-            cmd.extend(["--target", dirpath_output_pypi.as_posix()])
-    else:
-        cmd = [
-            sys.executable,
-            "-m",
-            "pip",
-            "download",
-            f"{package.name}=={package.version}",
-            "--no-deps",
-            "--python-version",
-            env_python_version,
-            "-d",
-            str(dirpath_output_pypi),
-        ]
-        if platform_pypi:
-            cmd.extend(["--platform", platform_pypi])
+    requirement, index_url = _resolve_pypi_requirement(package)
+
+    cmd = _build_pip_command(
+        requirement=requirement,
+        dirpath_output_pypi=dirpath_output_pypi,
+        env_python_version=env_python_version,
+        dry_run=dry_run,
+        platform_pypi=platform_pypi,
+        index_url=index_url,
+    )
 
     result_pip_download = subprocess.run(
         cmd,
@@ -222,8 +299,8 @@ def download_conda_package(
     dirpath_output_conda: Path,
     encoding: str,
     dry_run: bool,
-    platform_conda: Optional[str] = None,
-    channels: Optional[list[str]] = None,
+    platform_conda: str | None = None,
+    channels: list[str] | None = None,
 ) -> bool:
     """Download a conda package.
 
