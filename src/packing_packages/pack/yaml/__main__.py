@@ -19,6 +19,7 @@ def pack_from_yaml(args: argparse.Namespace) -> None:
         diff_only=args.diff_only,
         dry_run=args.dry_run,
         encoding=args.encoding,
+        generate_scripts=args.generate_scripts,
     )
 
 
@@ -76,6 +77,15 @@ def add_arguments_pack_from_yaml(parser: argparse.ArgumentParser):
         action="store_true",
         help=(
             "Only download packages that are not already present in the target directory."
+        ),
+    )
+    parser.add_argument(
+        "--no-scripts",
+        action="store_false",
+        dest="generate_scripts",
+        help=(
+            "Do not generate install scripts (install_packages.bat, "
+            "install_packages.sh) in the output directory."
         ),
     )
     parser.set_defaults(func=pack_from_yaml)

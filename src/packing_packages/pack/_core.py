@@ -10,6 +10,7 @@ from packing_packages.helpers import (
     is_installed,
 )
 from packing_packages.logging import get_child_logger
+from packing_packages.scripts import generate_install_scripts
 
 from ._types import (
     Package,
@@ -50,6 +51,7 @@ def packing_packages(
     diff_only: bool = False,
     encoding: str | None = None,
     dry_run: bool = False,
+    generate_scripts: bool = True,
 ) -> None:
     """packaging conda environment packages
 
@@ -65,6 +67,11 @@ def packing_packages(
         encoding for subprocess output
     dry_run : bool
         if True, do not download files
+    generate_scripts : bool
+        if True, generate install scripts (install_packages.bat / .sh)
+        in the output directory. Skipped when ``dry_run`` is True.
+        For a diff directory (``diff_only``), the scripts install into
+        the existing environment without creating it.
     """
 
     encoding = check_encoding(encoding)
@@ -156,6 +163,16 @@ def packing_packages(
             list_failed_packages.append(package)
 
     log_packing_results(list_packages, list_failed_packages)
+
+    if generate_scripts and not dry_run:
+        generate_install_scripts(
+            dirpath_output,
+            env_name=env_name,
+            encoding=encoding,
+            create_env=(
+                dirpath_output == Path(dirpath_target).resolve() / env_name
+            ),
+        )
 
 
 if __name__ == "__main__":
