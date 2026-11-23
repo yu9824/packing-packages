@@ -4,10 +4,8 @@ import argparse
 from collections.abc import Sequence
 from pathlib import Path
 
-from packing_packages.install._core import (
-    generate_install_scripts,
-    install_packages,
-)
+from packing_packages.install._core import install_packages
+from packing_packages.scripts._core import generate_install_scripts
 
 
 def install(args: argparse.Namespace) -> None:

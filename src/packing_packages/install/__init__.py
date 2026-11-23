@@ -13,6 +13,8 @@ directory into a conda environment.
 
 """
 
-from ._core import generate_install_scripts, install_packages
+from packing_packages.scripts import generate_install_scripts
+
+from ._core import install_packages
 
 __all__ = ("install_packages", "generate_install_scripts")
