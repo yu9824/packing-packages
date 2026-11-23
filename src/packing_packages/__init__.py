@@ -8,11 +8,13 @@ dependencies into a specified directory.
 
     $ python -m packing_packages pack --help
     $ python -m packing_packages install --help
+    $ python -m packing_packages scripts --help
 
     or
 
     $ packing-packages pack --help
     $ packing-packages install --help
+    $ packing-packages scripts --help
 
 """
 

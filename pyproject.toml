@@ -24,6 +24,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
 ] # https://pypi.org/classifiers/
 
 [project.optional-dependencies]
@@ -45,7 +46,6 @@ Documentation = "https://yu9824.github.io/packing-packages/"
 PyPI = "https://pypi.org/project/packing-packages/"
 Source = "https://github.com/yu9824/packing-packages"
 Tracker = "https://github.com/yu9824/packing-packages/issues"
-# Changelog = "https://github.com/yu9824/packing-packages/blob/main/CHANGELOG.md"
 
 [project.scripts]
 packing-packages = "packing_packages.__main__:entrypoint"

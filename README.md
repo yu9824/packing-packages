@@ -115,6 +115,14 @@ packing-packages pack -d . --diff-only
 
 New packages are saved to `myenv/diffs/<timestamp>/`, together with install scripts that add them to the existing environment (without `conda create`).
 
+### Strict Mode
+
+Fail with an error if any package cannot be packed (useful in CI):
+
+```bash
+packing-packages pack -d . --strict
+```
+
 ### Error-Resilient Installation
 
 The `packing-packages install` command continues even if some packages fail, providing detailed error reports for manual handling.
