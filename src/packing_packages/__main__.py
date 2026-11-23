@@ -8,6 +8,7 @@ from packing_packages import __version__
 from packing_packages.install.__main__ import add_arguments_install
 from packing_packages.pack.__main__ import add_arguments_pack
 from packing_packages.pack.yaml.__main__ import add_arguments_pack_from_yaml
+from packing_packages.scripts.__main__ import add_arguments_scripts
 
 __all__ = ("main",)
 
@@ -38,6 +39,12 @@ def main(cli_args: Sequence[str], prog: str | None = None) -> None:
         help="install packages in the conda environment",
     )
     add_arguments_install(parser_install)
+
+    parser_scripts = subparsers.add_parser(
+        "scripts",
+        help="generate standalone install scripts for packed packages",
+    )
+    add_arguments_scripts(parser_scripts)
 
     args = parser.parse_args(cli_args)
     args.func(args)
