@@ -24,6 +24,7 @@ def add_arguments_install(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         type=Path,
         default=".",
+        nargs="?",
         help=(
             "Path to the directory containing packages to install (e.g., *.tar.bz2, *.conda). "
             "Defaults to the current directory ('.') if not specified."
