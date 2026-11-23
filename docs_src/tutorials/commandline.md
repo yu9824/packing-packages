@@ -439,6 +439,20 @@ This creates the same structure, but packages are downloaded for the specified p
 
 Copy the packed directory (e.g., `./myenv/`) to the destination device.
 
+```{tip}
+From the author's experience: archive the directory into a single `.tar` file before transferring it. Packages such as `.conda` and `.whl` are already compressed, so the size barely changes, but transferring one file is noticeably faster in practice than transferring many small files. A plain `.tar` (no `.gz`) is enough. It also keeps the executable permission of `install_packages.sh`.
+```
+
+```bash
+# Source device: create an archive
+tar -cf myenv.tar myenv
+
+# Destination device: extract it
+tar -xf myenv.tar
+```
+
+`tar` is also available on Windows 10 (1803) or later in Command Prompt and PowerShell.
+
 #### Recommended: Using Generated Install Scripts
 
 `pack` generates install scripts automatically. They do not require `packing-packages` on the destination device:

@@ -77,7 +77,16 @@ Install scripts are generated automatically. Use `--no-scripts` to skip them.
 
 ### 2. Install on Target Machine
 
-Copy `myenv/` to your destination machine (offline) and run the generated script. `packing-packages` is not required there:
+Transfer `myenv/` to your destination machine (offline).
+
+> **Tip (from the author's experience):** Archive the directory into a single `.tar` file before transferring it. Packages (`.conda`, `.whl`, ...) are already compressed, so the size barely changes, but transferring one file is noticeably faster in practice than transferring many small files.
+
+```bash
+tar -cf myenv.tar myenv   # source machine
+tar -xf myenv.tar         # destination machine (also works on Windows 10+)
+```
+
+Then run the generated script. `packing-packages` is not required there:
 
 ```bash
 # Windows (run from "Miniforge Prompt" or "Anaconda Prompt")
