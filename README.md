@@ -24,11 +24,11 @@
 ### Key Features
 
 - 🚀 **Simple & Fast**: Pack entire conda environments with a single command
-- 📦 **Complete Dependency Resolution**: Automatically includes all conda and pip dependencies
+- 📦 **Complete Environment Snapshot**: Packs every conda and pip package installed in the environment
 - 🔄 **Cross-Platform Support**: Pack from YAML files even on different operating systems
-- 🛠️ **Flexible Installation**: Install packages directly or use standalone install scripts generated automatically by `pack`
+- 🛠️ **Standalone Install Scripts**: `pack` generates install scripts that work without `packing-packages` on the target machine
 - ⚡ **Incremental Updates**: Use `--diff-only` to download only new packages
-- 🎯 **Error Resilient**: Installation continues even if some packages fail, with detailed error reporting
+- 🎯 **Error Reporting**: Failed packages are reported in detail; use `--strict` to fail fast in CI
 - 📋 **YAML-Based Packing**: Create packages directly from conda environment YAML files
 
 ### Use Cases
@@ -46,7 +46,11 @@
 pip install packing-packages
 ```
 
-**Requirements**: Python, setuptools, and pip
+**Requirements**: conda (e.g., [Miniforge](https://github.com/conda-forge/miniforge)) on the source machine. To use `pack yaml` (PyYAML) and progress bars / colored logs, install the optional dependencies:
+
+```bash
+pip install "packing-packages[optional]"
+```
 
 ## Quick Start
 
@@ -73,27 +77,32 @@ Install scripts are generated automatically. Use `--no-scripts` to skip them.
 
 ### 2. Install on Target Machine
 
-On your destination machine (offline), install the packed packages:
+Transfer `myenv/` to your destination machine (offline).
+
+> **Tip (from the author's experience):** Archive the directory into a single `.tar` file before transferring it. Packages (`.conda`, `.whl`, ...) are already compressed, so the size barely changes, but transferring one file is noticeably faster in practice than transferring many small files.
 
 ```bash
-conda create -yn myenv --offline
-conda activate myenv
-packing-packages install ./myenv
+tar -cf myenv.tar myenv   # source machine
+tar -xf myenv.tar         # destination machine (also works on Windows 10+)
 ```
 
-### Alternative: Use Standalone Scripts
-
-`pack` generates `install_packages.bat` (Windows) and `install_packages.sh` (Unix/Linux) in the output directory. They create the environment and install all packages without requiring `packing-packages` on the target machine:
+Then run the generated script. `packing-packages` is not required there:
 
 ```bash
+# Windows (run from "Miniforge Prompt" or "Anaconda Prompt")
+myenv\install_packages.bat
+
+# Unix/Linux/macOS
 ./myenv/install_packages.sh
 ```
 
-To regenerate the scripts (e.g., with another environment name):
+The script creates the environment and installs all packages (it asks before recreating an existing environment). To install into an environment with another name, regenerate the scripts:
 
 ```bash
 packing-packages scripts ./myenv -n another-env
 ```
+
+You can also install manually with `conda install` / `pip install`, or with `packing-packages install`. See [Installation Methods](#installation-methods).
 
 ## Advanced Features
 
@@ -125,7 +134,7 @@ packing-packages pack -d . --strict
 
 ### Error-Resilient Installation
 
-The `packing-packages install` command continues even if some packages fail, providing detailed error reports for manual handling.
+`packing-packages install` continues even if some packages fail, providing detailed error reports for manual handling.
 
 ## Documentation
 
@@ -135,13 +144,14 @@ For detailed command-line options, advanced usage, and troubleshooting, see the 
 
 ### Installation Methods
 
-You can install packages using either:
-- **Standard commands** (`conda install` / `pip install`): Faster, but stops on first error
+- **Generated install scripts** (recommended): No `packing-packages` needed on the target machine
+- **Standard commands** (`conda install` / `pip install`): Install manually; wildcards are not expanded on Windows `cmd`
 - **`packing-packages install`**: Slower, but continues on errors and provides detailed reports
 
 ### Special Cases
 
-- **Non-PyPI sources** (e.g., PyTorch official index): May require manual handling
+- **PyTorch**: Wheels with a local version label (e.g., `2.1.0+cu118`) are downloaded from the PyTorch index automatically
+- **Non-PyPI sources** (other package indexes, local paths, editable installs, VCS URLs): Cannot be downloaded and are reported as failures; handle them manually
 - **Older packages**: Some may need `--use-pep517` flag for successful installation
 - **Proxy environments**: Set `HTTP_PROXY` and `HTTPS_PROXY` environment variables
 
