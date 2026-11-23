@@ -310,6 +310,11 @@ packing-packages install ./packages -n myenv
 
 Generate standalone install scripts (`install_packages.bat`, `install_packages.sh`). `pack` and `pack yaml` run this automatically, so use this command to regenerate scripts (e.g., with another environment name). The scripts do not depend on `packing-packages` and can be distributed independently.
 
+The generated scripts:
+
+- abort with guidance if `conda` is not found (on Windows, run them from "Miniforge Prompt" or "Anaconda Prompt")
+- ask `y/[n]` before removing and recreating an environment that already exists (empty input aborts)
+
 ### Basic Usage
 
 ```bash
