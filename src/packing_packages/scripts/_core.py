@@ -30,23 +30,30 @@ But it is recommended to leave some margin for safety.
 def split_pypi_packages_by_priority(
     packages_path: Sequence[Path],
 ) -> tuple[tuple[Path, ...], tuple[Path, ...]]:
-    """Split PyPI package file paths by priority."""
-    list_prior_packages: list[Path] = []
+    """Split PyPI package file paths into leading build packages and the rest.
 
-    for index_package in range(len(packages_path)):
-        package_path = packages_path[index_package]
-        package_path_stem = package_path.stem.replace("_", "-").lower()
-        package_name = package_path_stem.split("-")[0]
+    Parameters
+    ----------
+    packages_path : Sequence[Path]
+        PyPI package file paths sorted by priority
 
-        if package_name in PACKAGES_FOR_BUILD:
-            list_prior_packages.append(package_path)
-        else:
-            break
+    Returns
+    -------
+    tuple[tuple[Path, ...], tuple[Path, ...]]
+        (leading packages listed in ``PACKAGES_FOR_BUILD``, remaining packages)
+    """
 
-    return (
-        tuple(list_prior_packages),
-        tuple(packages_path[index_package:]),
+    def _is_prior(package_path: Path) -> bool:
+        package_name = (
+            package_path.stem.replace("_", "-").lower().split("-")[0]
+        )
+        return package_name in PACKAGES_FOR_BUILD
+
+    n_prior = next(
+        (i for i, path in enumerate(packages_path) if not _is_prior(path)),
+        len(packages_path),
     )
+    return tuple(packages_path[:n_prior]), tuple(packages_path[n_prior:])
 
 
 def split_packages_path_for_bat(
@@ -227,8 +234,12 @@ def generate_install_scripts(
             )
             bat_content.append("")
 
-        for filepath_str in split_packages_path_for_bat(
-            tup_filepaths_pypi_non_prior, output_dir
+        for filepath_str in (
+            split_packages_path_for_bat(
+                tup_filepaths_pypi_non_prior, output_dir
+            )
+            if tup_filepaths_pypi_non_prior
+            else ()
         ):
             bat_content.append(
                 " ".join(
@@ -317,27 +328,28 @@ def generate_install_scripts(
             )
             sh_content.append("")
 
-        sh_content.append(
-            " ".join(
-                [
-                    "conda",
-                    "run",
-                    "-n",
-                    "$env_name",
-                    "pip",
-                    "install",
-                    "--no-deps",
-                    "--no-build-isolation",
-                ]
-                + [
-                    '\\\n    "{}"'.format(
-                        filepath.relative_to(output_dir).as_posix()
-                    )
-                    for filepath in tup_filepaths_pypi_non_prior
-                ]
+        if tup_filepaths_pypi_non_prior:
+            sh_content.append(
+                " ".join(
+                    [
+                        "conda",
+                        "run",
+                        "-n",
+                        "$env_name",
+                        "pip",
+                        "install",
+                        "--no-deps",
+                        "--no-build-isolation",
+                    ]
+                    + [
+                        '\\\n    "{}"'.format(
+                            filepath.relative_to(output_dir).as_posix()
+                        )
+                        for filepath in tup_filepaths_pypi_non_prior
+                    ]
+                )
             )
-        )
-        sh_content.append("")
+            sh_content.append("")
 
     sh_content.append('echo "Installation completed."')
     sh_path = output_dir / "install_packages.sh"
