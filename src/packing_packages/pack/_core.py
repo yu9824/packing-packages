@@ -18,11 +18,13 @@ from ._types import (
     get_existing_packages_pypi,
 )
 from ._utils import (
+    PackingError,
     check_conda_installation,
     check_python_version,
     download_conda_package,
     download_pypi_package,
     log_packing_results,
+    raise_if_failed,
     prepare_output_directory,
 )
 
@@ -36,6 +38,7 @@ else:
 # Re-export for backward compatibility
 __all__ = (
     "Package",
+    "PackingError",
     "get_existing_packages_conda",
     "get_existing_packages_pypi",
     "packing_packages",
@@ -52,6 +55,7 @@ def packing_packages(
     encoding: str | None = None,
     dry_run: bool = False,
     generate_scripts: bool = True,
+    strict: bool = False,
 ) -> None:
     """packaging conda environment packages
 
@@ -67,6 +71,9 @@ def packing_packages(
         encoding for subprocess output
     dry_run : bool
         if True, do not download files
+    strict : bool
+        if True, raise PackingError when any package fails to be packed.
+        Install scripts are not generated in that case.
     generate_scripts : bool
         if True, generate install scripts (install_packages.bat / .sh)
         in the output directory. Skipped when ``dry_run`` is True.
@@ -163,6 +170,7 @@ def packing_packages(
             list_failed_packages.append(package)
 
     log_packing_results(list_packages, list_failed_packages)
+    raise_if_failed(list_failed_packages, strict)
 
     if generate_scripts and not dry_run:
         generate_install_scripts(

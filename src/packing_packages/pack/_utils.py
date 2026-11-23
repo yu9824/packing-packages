@@ -27,6 +27,36 @@ from ._types import (
 _logger = get_child_logger(__name__)
 
 
+class PackingError(RuntimeError):
+    """Raised in strict mode when some packages fail to be packed."""
+
+    def __init__(self, failed_packages: tuple[Package, ...]) -> None:
+        self.failed_packages = failed_packages
+        super().__init__(
+            f"Failed to pack {len(failed_packages)} package(s): "
+            + ", ".join(f"{p.name}=={p.version}" for p in failed_packages)
+        )
+
+
+def raise_if_failed(failed_packages: list[Package], strict: bool) -> None:
+    """Raise PackingError if ``strict`` is True and any package failed.
+
+    Parameters
+    ----------
+    failed_packages : list[Package]
+        Packages that failed to be packed.
+    strict : bool
+        If True, raise on any failure.
+
+    Raises
+    ------
+    PackingError
+        If ``strict`` is True and ``failed_packages`` is not empty.
+    """
+    if strict and failed_packages:
+        raise PackingError(tuple(failed_packages))
+
+
 def check_conda_installation() -> Path:
     """Check conda installation and return conda package directory path.
 
