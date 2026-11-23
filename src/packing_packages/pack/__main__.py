@@ -6,7 +6,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from packing_packages.helpers import check_env_name
-from packing_packages.pack._core import packing_packages
+from packing_packages.pack._core import PackingError, packing_packages
 
 
 def pack(args: argparse.Namespace) -> None:
@@ -17,14 +17,18 @@ def pack(args: argparse.Namespace) -> None:
     if not dirpath_target.is_dir():
         raise FileNotFoundError(dirpath_target)
 
-    packing_packages(
-        env_name=env_name,
-        dirpath_target=dirpath_target,
-        diff_only=args.diff_only,
-        encoding=args.encoding,
-        dry_run=args.dry_run,
-        generate_scripts=args.generate_scripts,
-    )
+    try:
+        packing_packages(
+            env_name=env_name,
+            dirpath_target=dirpath_target,
+            diff_only=args.diff_only,
+            encoding=args.encoding,
+            dry_run=args.dry_run,
+            generate_scripts=args.generate_scripts,
+            strict=args.strict,
+        )
+    except PackingError as err:
+        raise SystemExit(f"[ERROR] {err}") from err
 
 
 def add_arguments_pack(parser: argparse.ArgumentParser):
@@ -77,6 +81,14 @@ def add_arguments_pack(parser: argparse.ArgumentParser):
         help=(
             "Do not generate install scripts (install_packages.bat, "
             "install_packages.sh) in the output directory."
+        ),
+    )
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        help=(
+            "Exit with an error if any package fails to be packed. "
+            "Install scripts are not generated in that case."
         ),
     )
     parser.set_defaults(func=pack)

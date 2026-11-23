@@ -13,6 +13,7 @@ from packing_packages.pack._utils import (
     download_conda_package,
     download_pypi_package,
     log_packing_results,
+    raise_if_failed,
     prepare_output_directory,
 )
 from packing_packages.pack.yaml.constants import PLATFORM_MAP
@@ -51,6 +52,7 @@ if is_installed("yaml"):
         dry_run: bool = False,
         encoding: str | None = None,
         generate_scripts: bool = True,
+        strict: bool = False,
     ) -> None:
         """Package Python dependencies from a YAML file for a specific platform.
 
@@ -73,6 +75,10 @@ if is_installed("yaml"):
 
         encoding : str, optional
             File encoding used to read the YAML file. If None, the system default encoding is used.
+
+        strict : bool, default=False
+            If True, raise PackingError when any package fails to be packed.
+            Install scripts are not generated in that case.
 
         generate_scripts : bool, default=True
             If True, generate install scripts (install_packages.bat / .sh) in the output directory.
@@ -194,6 +200,7 @@ if is_installed("yaml"):
                 "Failed over half of the packages. "
                 "Please check the 'platform' option."
             )
+        raise_if_failed(list_failed_packages, strict)
 
         if generate_scripts and not dry_run:
             generate_install_scripts(

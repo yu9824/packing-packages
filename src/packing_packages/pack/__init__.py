@@ -13,6 +13,6 @@ dependencies into a specified directory.
 
 """
 
-from ._core import packing_packages
+from ._core import PackingError, packing_packages
 
-__all__ = ("packing_packages",)
+__all__ = ("PackingError", "packing_packages")

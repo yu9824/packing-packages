@@ -112,6 +112,14 @@ Do not generate install scripts. By default, `install_packages.bat` and `install
 packing-packages pack -d . --no-scripts
 ```
 
+#### `--strict`
+
+Exit with an error if any package fails to be packed (e.g., for CI). Install scripts are not generated in that case. In the Python API, use `strict=True`; it raises `packing_packages.pack.PackingError`.
+
+```bash
+packing-packages pack -d . --strict
+```
+
 #### `-e, --encoding`
 
 Specify the encoding to use for subprocess execution. If not specified, the system default encoding is used.
@@ -215,6 +223,14 @@ Do not generate install scripts. By default, `install_packages.bat` and `install
 
 ```bash
 packing-packages pack yaml environment.yaml -p linux-64 --no-scripts
+```
+
+#### `--strict`
+
+Exit with an error if any package fails to be packed (e.g., for CI). Install scripts are not generated in that case. In the Python API, use `strict=True`; it raises `packing_packages.pack.PackingError`.
+
+```bash
+packing-packages pack yaml environment.yaml -p linux-64 --strict
 ```
 
 #### `-e, --encoding`
