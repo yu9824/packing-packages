@@ -96,6 +96,7 @@ def generate_install_scripts(
     env_name: str | None = None,
     output_dir: str | os.PathLike | None = None,
     encoding: str | None = None,
+    create_env: bool = True,
 ) -> dict[str, Path]:
     """Generate install scripts for Windows and Unix/Linux.
 
@@ -113,6 +114,10 @@ def generate_install_scripts(
         Output directory for generated scripts. If None, uses dirpath_packages, by default None
     encoding : str, optional
         Encoding for generated script files. If None, uses system default encoding, by default None
+    create_env : bool, optional
+        If True, the scripts create a new conda environment before installing.
+        If False, packages are installed into an existing environment
+        (e.g., for diff directories created by ``diff_only``), by default True
 
     Returns
     -------
@@ -147,6 +152,9 @@ def generate_install_scripts(
     # Find package files
     tup_filepaths_conda = get_conda_sorted_packages_path(dirpath_packages)
     tup_filepaths_pypi = get_pypi_sorted_packages_path(dirpath_packages)
+    tup_filepaths_pypi_prior, tup_filepaths_pypi_non_prior = (
+        split_pypi_packages_by_priority(tup_filepaths_pypi)
+    )
 
     # Generate Windows batch file (.bat)
     bat_content = [
@@ -161,10 +169,15 @@ def generate_install_scripts(
         "",
         f"set env_name={env_name}",
         "",
-        "REM Create new conda environment.",
-        "call conda create -y -n %env_name% --offline --no-default-packages",
-        "",
     ]
+    if create_env:
+        bat_content.extend(
+            [
+                "REM Create new conda environment.",
+                "call conda create -y -n %env_name% --offline --no-default-packages",
+                "",
+            ]
+        )
     if tup_filepaths_conda:
         bat_content.append("REM Install conda packages")
 
@@ -191,9 +204,6 @@ def generate_install_scripts(
     if tup_filepaths_pypi:
         bat_content.append("REM Install PyPI packages")
 
-        tup_filepaths_pypi_prior, tup_filepaths_pypi_non_prior = (
-            split_pypi_packages_by_priority(tup_filepaths_pypi)
-        )
         for filepath_pypi_prior in tup_filepaths_pypi_prior:
             bat_content.append(
                 " ".join(
@@ -255,10 +265,15 @@ def generate_install_scripts(
         'cd "$SCRIPT_DIR"',
         "",
         f"env_name={env_name}",
-        "# Create new conda environment.",
-        "conda create -y -n $env_name --offline --no-default-packages",
-        "",
     ]
+    if create_env:
+        sh_content.extend(
+            [
+                "# Create new conda environment.",
+                "conda create -y -n $env_name --offline --no-default-packages",
+                "",
+            ]
+        )
     if tup_filepaths_conda:
         sh_content.append("# Install conda packages")
         sh_content.append(
