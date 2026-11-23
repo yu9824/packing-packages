@@ -177,3 +177,24 @@ def test_sh_conda_not_found(tmp_path: Path):
 
     assert result.returncode == 1
     assert "'conda' command not found" in result.stderr
+
+
+def test_bat_checks_error_after_each_command(tmp_path: Path):
+    _make_packages(
+        tmp_path,
+        conda=("python-3.12.0-h0_0.conda",),
+        pypi=("pip-24.0-py3-none-any.whl", "six-1.16.0-py2.py3-none-any.whl"),
+    )
+    bat, _ = _read_scripts(
+        generate_install_scripts(tmp_path, env_name=ENV_NAME, encoding="utf-8")
+    )
+
+    # join continuation lines (" ^") so that each command is one logical line
+    lines = bat.replace(" ^\n", " ").splitlines()
+    for i, line in enumerate(lines):
+        if line.startswith(
+            ("call conda create", "call conda install", "call conda run")
+        ):
+            assert lines[i + 1] == "if errorlevel 1 goto install_failed", line
+    assert ":install_failed" in lines
+    assert lines.index("exit /b 0") < lines.index(":install_failed")
