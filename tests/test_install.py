@@ -1,59 +1,93 @@
+"""End-to-end: create an env, pack it, install it with the generated script.
+
+These tests create and remove conda environments, so they are meant for CI.
+"""
+
 import os
 import subprocess
 import sys
+from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
 
-from packing_packages.scripts import generate_install_scripts
 from packing_packages.pack import packing_packages
+from packing_packages.scripts import generate_install_scripts
+
+ENV_NAME_TARGET = "pp_test_target"
+"""Environment to pack. It does not contain packing-packages itself."""
+
+ENV_NAME_INSTALL = "pp_test_install"
+"""Environment created by the generated install script."""
+
+PYPI_PACKAGE = "six"
+"""Small pure-Python package installed from PyPI into the target env."""
+
+PYTHON_VERSION = f"{sys.version_info.major}.{sys.version_info.minor}"
+
+pytestmark = pytest.mark.os_any
 
 
-@pytest.mark.os_windows
-@pytest.mark.skipif(not sys.platform.startswith("win"), reason="Windows only")
-def test_windows_specific():
-    assert True
+def _conda(*args: str) -> subprocess.CompletedProcess:
+    return subprocess.run([os.environ["CONDA_EXE"], *args], check=True)
 
 
-@pytest.mark.os_macos
-@pytest.mark.skipif(not sys.platform.startswith("darwin"), reason="macOS only")
-def test_macos_specific():
-    assert True
+def _remove_env(env_name: str) -> None:
+    subprocess.run(
+        [os.environ["CONDA_EXE"], "env", "remove", "-y", "-n", env_name],
+        check=False,
+    )
 
 
-@pytest.mark.os_win_mac
-@pytest.mark.skipif(
-    not sys.platform.startswith("darwin")
-    and not sys.platform.startswith("win"),
-    reason="macOS or Windows only",
-)
-def test_install():
-    env_name_pack = os.environ["CONDA_DEFAULT_ENV"]
-    env_name_create = "test_create"
+@pytest.fixture(scope="module")
+def env_target() -> Iterator[str]:
+    _conda(
+        "create",
+        "-y",
+        "-n",
+        ENV_NAME_TARGET,
+        "-c",
+        "conda-forge",
+        f"python={PYTHON_VERSION}",
+        "pip",
+    )
+    _conda("run", "-n", ENV_NAME_TARGET, "pip", "install", PYPI_PACKAGE)
+    yield ENV_NAME_TARGET
+    _remove_env(ENV_NAME_TARGET)
 
-    packing_packages(env_name=env_name_pack)
 
-    dirpath_packages = Path(os.getcwd()).expanduser().resolve() / env_name_pack
-    assert dirpath_packages.is_dir()
+@pytest.fixture
+def env_install() -> Iterator[str]:
+    _remove_env(ENV_NAME_INSTALL)
+    yield ENV_NAME_INSTALL
+    _remove_env(ENV_NAME_INSTALL)
 
-    filepath_install_packages_bat = dirpath_packages / "install_packages.bat"
-    filepath_install_packages_sh = dirpath_packages / "install_packages.sh"
+
+def test_pack_and_install(env_target: str, env_install: str, tmp_path: Path):
+    # strict: every package of the target env must be packed
+    packing_packages(env_name=env_target, dirpath_target=tmp_path, strict=True)
+
+    dirpath_packages = tmp_path / env_target
+    filepath_bat = dirpath_packages / "install_packages.bat"
+    filepath_sh = dirpath_packages / "install_packages.sh"
 
     # scripts are generated automatically after packing
-    assert filepath_install_packages_bat.is_file()
-    assert filepath_install_packages_sh.is_file()
+    assert filepath_bat.is_file()
+    assert filepath_sh.is_file()
+    assert any((dirpath_packages / "pypi").glob(f"{PYPI_PACKAGE}-*"))
 
     # regenerate with another environment name to install into
     generate_install_scripts(
-        dirpath_packages=dirpath_packages, env_name=env_name_create
-    )
-    assert f"env_name={env_name_create}" in (
-        filepath_install_packages_sh.read_text(encoding="utf-8")
+        dirpath_packages=dirpath_packages, env_name=env_install
     )
 
     if sys.platform.startswith("win"):
-        subprocess.run([str(filepath_install_packages_bat)], check=True)
-    elif sys.platform.startswith("darwin"):
-        subprocess.run([str(filepath_install_packages_sh)], check=True)
+        subprocess.run(
+            [str(filepath_bat)], check=True, stdin=subprocess.DEVNULL
+        )
     else:
-        raise ValueError(f"Unsupported platform: {sys.platform}")
+        subprocess.run(
+            ["bash", str(filepath_sh)], check=True, stdin=subprocess.DEVNULL
+        )
+
+    _conda("run", "-n", env_install, "python", "-c", f"import {PYPI_PACKAGE}")

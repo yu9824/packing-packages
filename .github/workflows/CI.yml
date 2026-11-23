@@ -41,10 +41,17 @@ on:
 jobs:
   test:
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        # Ubuntu runs the whole test suite on every Python version.
+        # Windows / macOS run only OS-dependent tests on the min / max versions.
+        os: [ubuntu-latest]
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
-      # max-parallel: 6
+        include:
+          - { os: windows-latest, python-version: "3.9" }
+          - { os: windows-latest, python-version: "3.14" }
+          - { os: macos-latest, python-version: "3.9" }
+          - { os: macos-latest, python-version: "3.14" }
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -74,7 +81,7 @@ jobs:
         if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
           pytest -xs .
         elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-          pytest -xs . -m "os_windows or os_win_mac"
+          pytest -xs . -m "os_windows or os_any"
         else
-          pytest -xs . -m "os_macos or os_win_mac"
+          pytest -xs . -m "os_macos or os_any"
         fi
