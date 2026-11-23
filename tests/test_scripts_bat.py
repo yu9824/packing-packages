@@ -92,3 +92,36 @@ def test_bat_conda_not_found(tmp_path: Path):
     assert result.returncode == 1
     assert "'conda' command not found" in result.stdout
     assert "Miniforge Prompt" in result.stdout
+
+
+@pytest.mark.parametrize("failing_subcommand", ["create", "install", "run"])
+def test_bat_stops_on_error(tmp_path: Path, failing_subcommand: str):
+    dirpath_packages = tmp_path / "packages"
+    _generate_bat(dirpath_packages)  # creates conda/ with a dummy package
+    (dirpath_packages / "pypi").mkdir()
+    (dirpath_packages / "pypi" / "six-1.16.0-py2.py3-none-any.whl").touch()
+    filepath_bat = generate_install_scripts(
+        dirpath_packages, env_name=ENV_NAME, encoding="utf-8"
+    )["batch"]
+
+    dirpath_bin = tmp_path / "bin"
+    dirpath_bin.mkdir()
+    filepath_log = tmp_path / "conda.log"
+    (dirpath_bin / "conda.bat").write_text(
+        "@echo off\r\n"
+        f'echo %1 >> "{filepath_log}"\r\n'
+        'if "%1"=="list" exit /b 1\r\n'
+        f'if "%1"=="{failing_subcommand}" exit /b 1\r\n'
+        "exit /b 0\r\n",
+        encoding="utf-8",
+    )
+
+    result = _run_bat(
+        filepath_bat, os.pathsep.join([str(dirpath_bin), _system_path()]), ""
+    )
+
+    called = filepath_log.read_text(encoding="utf-8").split()
+    assert result.returncode == 1, result.stdout
+    assert "Installation failed" in result.stdout
+    # nothing runs after the failing command
+    assert called[-1] == failing_subcommand

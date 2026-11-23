@@ -61,9 +61,24 @@ BAT_CREATE_ENV = (
     "",
     "REM Create new conda environment.",
     "call conda create -y -n %env_name% --offline --no-default-packages",
+    "if errorlevel 1 goto install_failed",
     "",
 )
 """Batch lines to create the environment, confirming before overwriting."""
+
+BAT_CHECK_ERROR = "if errorlevel 1 goto install_failed"
+"""Batch line placed after each install command to stop on error."""
+
+BAT_FOOTER = (
+    "echo Installation completed.",
+    "exit /b 0",
+    "",
+    ":install_failed",
+    "echo [ERROR] Installation failed. See the messages above.",
+    "pause",
+    "exit /b 1",
+)
+"""Batch lines to finish successfully, or abort from ``install_failed``."""
 
 SH_CREATE_ENV = (
     "# Ask before overwriting an existing environment",
@@ -267,7 +282,7 @@ def generate_install_scripts(
                     ]
                 )
             )
-            bat_content.append("")
+            bat_content.extend((BAT_CHECK_ERROR, ""))
 
     if tup_filepaths_pypi:
         bat_content.append("REM Install PyPI packages")
@@ -293,7 +308,7 @@ def generate_install_scripts(
                     ]
                 )
             )
-            bat_content.append("")
+            bat_content.extend((BAT_CHECK_ERROR, ""))
 
         for filepath_str in (
             split_packages_path_for_bat(
@@ -318,9 +333,9 @@ def generate_install_scripts(
                     ]
                 )
             )
-            bat_content.append("")
+            bat_content.extend((BAT_CHECK_ERROR, ""))
 
-    bat_content.append("echo Installation completed.")
+    bat_content.extend(BAT_FOOTER)
     bat_path = output_dir / "install_packages.bat"
     # Write .bat file with CRLF line endings
     bat_path.write_text("\r\n".join(bat_content), encoding=encoding)

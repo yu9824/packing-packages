@@ -469,7 +469,7 @@ The scripts:
 
 - create the environment and install conda packages first, then PyPI packages
 - ask `y/[n]` before removing and recreating an environment that already exists
-- `install_packages.sh` stops at the first error
+- stop at the first error
 
 To install into an environment with another name, regenerate the scripts with [`scripts` Command](#scripts-command).
 
@@ -532,4 +532,4 @@ PyTorch wheels with a local version label (e.g., `torch==2.1.0+cu118`) are downl
 
 ### Handling Installation Errors
 
-`install_packages.sh` stops at the first error. The `packing-packages install` command skips packages that fail and continues. Check the error logs and install them manually if necessary.
+The generated install scripts stop at the first error. The `packing-packages install` command skips packages that fail and continues. Check the error logs and install them manually if necessary.
