@@ -45,6 +45,46 @@ SH_CHECK_CONDA = (
 )
 """Shell lines to abort with guidance when conda is not available."""
 
+BAT_CREATE_ENV = (
+    "REM Ask before overwriting an existing environment",
+    "call conda list -n %env_name% >nul 2>nul",
+    "if errorlevel 1 goto create_env",
+    'set "answer="',
+    "set /p \"answer=Environment '%env_name%' already exists. "
+    'Remove and recreate it? y/[n]: "',
+    'if /i "!answer!"=="y" goto create_env',
+    'if /i "!answer!"=="yes" goto create_env',
+    "echo Aborted.",
+    "pause",
+    "exit /b 1",
+    ":create_env",
+    "",
+    "REM Create new conda environment.",
+    "call conda create -y -n %env_name% --offline --no-default-packages",
+    "",
+)
+"""Batch lines to create the environment, confirming before overwriting."""
+
+SH_CREATE_ENV = (
+    "# Ask before overwriting an existing environment",
+    'if conda list -n "$env_name" >/dev/null 2>&1; then',
+    "    read -r -p \"Environment '$env_name' already exists. "
+    'Remove and recreate it? y/[n]: " answer || answer=""',
+    '    case "$answer" in',
+    "        [yY] | [yY][eE][sS]) ;;",
+    '        *) echo "Aborted." >&2; exit 1 ;;',
+    "    esac",
+    "fi",
+    "",
+    "# Create new conda environment.",
+    'conda create -y -n "$env_name" --offline --no-default-packages',
+    "",
+)
+"""Shell lines to create the environment, confirming before overwriting.
+
+Empty input or EOF (non-interactive) aborts.
+"""
+
 MAX_LETTER_LENGTH_BAT = 7000
 """Maximum number of letters in a batch file.
 
@@ -205,13 +245,7 @@ def generate_install_scripts(
         *BAT_CHECK_CONDA,
     ]
     if create_env:
-        bat_content.extend(
-            [
-                "REM Create new conda environment.",
-                "call conda create -y -n %env_name% --offline --no-default-packages",
-                "",
-            ]
-        )
+        bat_content.extend(BAT_CREATE_ENV)
     if tup_filepaths_conda:
         bat_content.append("REM Install conda packages")
 
@@ -307,13 +341,7 @@ def generate_install_scripts(
         *SH_CHECK_CONDA,
     ]
     if create_env:
-        sh_content.extend(
-            [
-                "# Create new conda environment.",
-                "conda create -y -n $env_name --offline --no-default-packages",
-                "",
-            ]
-        )
+        sh_content.extend(SH_CREATE_ENV)
     if tup_filepaths_conda:
         sh_content.append("# Install conda packages")
         sh_content.append(
