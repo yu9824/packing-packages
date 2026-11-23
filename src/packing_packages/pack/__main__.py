@@ -23,6 +23,7 @@ def pack(args: argparse.Namespace) -> None:
         diff_only=args.diff_only,
         encoding=args.encoding,
         dry_run=args.dry_run,
+        generate_scripts=args.generate_scripts,
     )
 
 
@@ -67,6 +68,15 @@ def add_arguments_pack(parser: argparse.ArgumentParser):
         action="store_true",
         help=(
             "Only download packages that are not already present in the target directory."
+        ),
+    )
+    parser.add_argument(
+        "--no-scripts",
+        action="store_false",
+        dest="generate_scripts",
+        help=(
+            "Do not generate install scripts (install_packages.bat, "
+            "install_packages.sh) in the output directory."
         ),
     )
     parser.set_defaults(func=pack)

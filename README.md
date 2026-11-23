@@ -26,7 +26,7 @@
 - 🚀 **Simple & Fast**: Pack entire conda environments with a single command
 - 📦 **Complete Dependency Resolution**: Automatically includes all conda and pip dependencies
 - 🔄 **Cross-Platform Support**: Pack from YAML files even on different operating systems
-- 🛠️ **Flexible Installation**: Install packages directly or generate standalone install scripts
+- 🛠️ **Flexible Installation**: Install packages directly or use standalone install scripts generated automatically by `pack`
 - ⚡ **Incremental Updates**: Use `--diff-only` to download only new packages
 - 🎯 **Error Resilient**: Installation continues even if some packages fail, with detailed error reporting
 - 📋 **YAML-Based Packing**: Create packages directly from conda environment YAML files
@@ -63,9 +63,13 @@ This creates a directory structure:
 ```
 .
 └── myenv/
-    ├── conda/    # Conda packages
-    └── pypi/     # PyPI packages
+    ├── conda/                 # Conda packages
+    ├── pypi/                  # PyPI packages
+    ├── install_packages.bat   # Standalone install script (Windows)
+    └── install_packages.sh    # Standalone install script (Unix/Linux)
 ```
+
+Install scripts are generated automatically. Use `--no-scripts` to skip them.
 
 ### 2. Install on Target Machine
 
@@ -77,15 +81,19 @@ conda activate myenv
 packing-packages install ./myenv
 ```
 
-### Alternative: Generate Standalone Scripts
+### Alternative: Use Standalone Scripts
 
-Generate install scripts that work independently without requiring `packing-packages`:
+`pack` generates `install_packages.bat` (Windows) and `install_packages.sh` (Unix/Linux) in the output directory. They create the environment and install all packages without requiring `packing-packages` on the target machine:
 
 ```bash
-packing-packages install ./myenv --generate-scripts
+./myenv/install_packages.sh
 ```
 
-This creates `install_packages.bat` (Windows) and `install_packages.sh` (Unix/Linux) that can be executed directly on the target machine.
+To regenerate the scripts (e.g., with another environment name):
+
+```bash
+packing-packages scripts ./myenv -n another-env
+```
 
 ## Advanced Features
 
@@ -104,6 +112,8 @@ Only download packages that don't already exist in the target directory:
 ```bash
 packing-packages pack -d . --diff-only
 ```
+
+New packages are saved to `myenv/diffs/<timestamp>/`, together with install scripts that add them to the existing environment (without `conda create`).
 
 ### Error-Resilient Installation
 

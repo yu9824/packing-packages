@@ -4,10 +4,7 @@ import argparse
 from collections.abc import Sequence
 from pathlib import Path
 
-from packing_packages.install._core import (
-    generate_install_scripts,
-    install_packages,
-)
+from packing_packages.install._core import install_packages
 
 
 def install(args: argparse.Namespace) -> None:
@@ -16,19 +13,11 @@ def install(args: argparse.Namespace) -> None:
     if not dirpath_packages.is_dir():
         raise FileNotFoundError(dirpath_packages)
 
-    if args.generate_scripts:
-        generate_install_scripts(
-            dirpath_packages=dirpath_packages,
-            env_name=args.env_name,
-            output_dir=args.output_dir,
-            encoding=args.encoding,
-        )
-    else:
-        install_packages(
-            dirpath_packages=dirpath_packages,
-            env_name=args.env_name,
-            encoding=args.encoding,
-        )
+    install_packages(
+        dirpath_packages=dirpath_packages,
+        env_name=args.env_name,
+        encoding=args.encoding,
+    )
 
 
 def add_arguments_install(parser: argparse.ArgumentParser) -> None:
@@ -49,9 +38,7 @@ def add_arguments_install(parser: argparse.ArgumentParser) -> None:
         default=None,
         help=(
             "Name of the conda environment where packages will be installed. "
-            "If not specified: "
-            "for install command, uses currently active environment; "
-            "for --generate-scripts, uses directory name of packages directory."
+            "If not specified, uses the currently active environment."
         ),
     )
     parser.add_argument(
@@ -62,24 +49,6 @@ def add_arguments_install(parser: argparse.ArgumentParser) -> None:
         help=(
             "Encoding to use for subprocess execution (e.g., when calling conda commands). "
             "Defaults to the system encoding if not specified."
-        ),
-    )
-    parser.add_argument(
-        "--generate-scripts",
-        action="store_true",
-        help=(
-            "Generate install scripts (install_packages.bat, "
-            "install_packages.sh) instead of installing packages directly. "
-            "These scripts can be distributed and used independently."
-        ),
-    )
-    parser.add_argument(
-        "--output-dir",
-        type=Path,
-        default=None,
-        help=(
-            "Output directory for generated scripts. "
-            "Defaults to the package directory if not specified."
         ),
     )
     parser.set_defaults(func=install)

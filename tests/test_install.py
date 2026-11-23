@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from packing_packages.install import generate_install_scripts
+from packing_packages.scripts import generate_install_scripts
 from packing_packages.pack import packing_packages
 
 
@@ -36,15 +36,20 @@ def test_install():
     dirpath_packages = Path(os.getcwd()).expanduser().resolve() / env_name_pack
     assert dirpath_packages.is_dir()
 
-    generate_install_scripts(
-        dirpath_packages=dirpath_packages, env_name=env_name_create
-    )
-
     filepath_install_packages_bat = dirpath_packages / "install_packages.bat"
     filepath_install_packages_sh = dirpath_packages / "install_packages.sh"
 
+    # scripts are generated automatically after packing
     assert filepath_install_packages_bat.is_file()
     assert filepath_install_packages_sh.is_file()
+
+    # regenerate with another environment name to install into
+    generate_install_scripts(
+        dirpath_packages=dirpath_packages, env_name=env_name_create
+    )
+    assert f"env_name={env_name_create}" in (
+        filepath_install_packages_sh.read_text(encoding="utf-8")
+    )
 
     if sys.platform.startswith("win"):
         subprocess.run([str(filepath_install_packages_bat)], check=True)

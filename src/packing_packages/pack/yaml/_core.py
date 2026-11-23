@@ -16,6 +16,7 @@ from packing_packages.pack._utils import (
     prepare_output_directory,
 )
 from packing_packages.pack.yaml.constants import PLATFORM_MAP
+from packing_packages.scripts import generate_install_scripts
 
 if is_installed("tqdm"):
     from tqdm.auto import tqdm  # type: ignore
@@ -49,6 +50,7 @@ if is_installed("yaml"):
         diff_only: bool = False,
         dry_run: bool = False,
         encoding: str | None = None,
+        generate_scripts: bool = True,
     ) -> None:
         """Package Python dependencies from a YAML file for a specific platform.
 
@@ -71,6 +73,11 @@ if is_installed("yaml"):
 
         encoding : str, optional
             File encoding used to read the YAML file. If None, the system default encoding is used.
+
+        generate_scripts : bool, default=True
+            If True, generate install scripts (install_packages.bat / .sh) in the output directory.
+            Skipped when ``dry_run`` is True. For a diff directory (``diff_only``),
+            the scripts install into the existing environment without creating it.
 
         Examples
         --------
@@ -186,6 +193,16 @@ if is_installed("yaml"):
             _logger.warning(
                 "Failed over half of the packages. "
                 "Please check the 'platform' option."
+            )
+
+        if generate_scripts and not dry_run:
+            generate_install_scripts(
+                dirpath_output,
+                env_name=env_name,
+                encoding=encoding,
+                create_env=(
+                    dirpath_output == Path(dirpath_target).resolve() / env_name
+                ),
             )
 else:
 
