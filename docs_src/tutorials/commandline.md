@@ -102,6 +102,16 @@ Skip packages that already exist in the target directory and only download new p
 packing-packages pack -d . --diff-only
 ```
 
+New packages are saved to `<envname>/diffs/<timestamp>/`. The install scripts generated there install into the existing environment (without `conda create`).
+
+#### `--no-scripts`
+
+Do not generate install scripts. By default, `install_packages.bat` and `install_packages.sh` are generated in the output directory after packing (skipped with `--dry-run`). See [`scripts` Command](#scripts-command).
+
+```bash
+packing-packages pack -d . --no-scripts
+```
+
 #### `-e, --encoding`
 
 Specify the encoding to use for subprocess execution. If not specified, the system default encoding is used.
@@ -197,6 +207,16 @@ Skip packages that already exist in the target directory and only download new p
 packing-packages pack yaml environment.yaml -p linux-64 --diff-only
 ```
 
+New packages are saved to `<envname>/diffs/<timestamp>/`. The install scripts generated there install into the existing environment (without `conda create`).
+
+#### `--no-scripts`
+
+Do not generate install scripts. By default, `install_packages.bat` and `install_packages.sh` are generated in the output directory after packing (skipped with `--dry-run`). See [`scripts` Command](#scripts-command).
+
+```bash
+packing-packages pack yaml environment.yaml -p linux-64 --no-scripts
+```
+
 #### `-e, --encoding`
 
 Specify the encoding to use for subprocess execution.
@@ -276,50 +296,6 @@ Specify the encoding to use for subprocess execution. If not specified, the syst
 packing-packages install . -e utf-8
 ```
 
-#### `--generate-scripts`
-
-Generate install scripts (`install_packages.bat`, `install_packages.sh`) instead of installing packages directly. These scripts can be distributed and used independently.
-
-```bash
-packing-packages install ./packages --generate-scripts
-```
-
-**Generated files:**
-- `install_packages.bat`: Windows batch script
-- `install_packages.sh`: Unix/Linux shell script
-
-**Directory structure after generation:**
-```
-./packages/
-├── conda/
-│   └── *.tar.bz2, *.conda
-├── pypi/
-│   └── *.whl, *.tar.gz
-├── install_packages.bat      # Generated
-└── install_packages.sh       # Generated
-```
-
-#### `--output-dir`
-
-Specify the output directory for generated scripts. If not specified, scripts are written to the package directory.
-
-```bash
-packing-packages install ./packages --generate-scripts --output-dir ./scripts
-```
-
-**Resulting structure:**
-```
-./packages/
-├── conda/
-│   └── *.tar.bz2, *.conda
-└── pypi/
-    └── *.whl, *.tar.gz
-
-./scripts/
-├── install_packages.bat      # Generated here
-└── install_packages.sh       # Generated here
-```
-
 ### Examples
 
 ```bash
@@ -328,16 +304,62 @@ packing-packages install .
 
 # Install into a specific environment
 packing-packages install ./packages -n myenv
-
-# Generate install scripts
-packing-packages install ./packages --generate-scripts
-
-# Generate scripts with environment name and output directory specified
-packing-packages install /path/to/packages \
-  --generate-scripts \
-  --env-name myenv \
-  --output-dir /path/to/output
 ```
+
+## `scripts` Command
+
+Generate standalone install scripts (`install_packages.bat`, `install_packages.sh`). `pack` and `pack yaml` run this automatically, so use this command to regenerate scripts (e.g., with another environment name). The scripts do not depend on `packing-packages` and can be distributed independently.
+
+### Basic Usage
+
+```bash
+packing-packages scripts ./myenv
+```
+
+**Directory structure after generation:**
+```
+./myenv/
+├── conda/
+│   └── *.tar.bz2, *.conda
+├── pypi/
+│   └── *.whl, *.tar.gz
+├── install_packages.bat      # Generated
+└── install_packages.sh       # Generated
+```
+
+### Options
+
+#### `DIRPATH_PACKAGES` (positional argument)
+
+Path to the directory containing packed packages. Defaults to the current directory.
+
+#### `-n, --env-name`
+
+Name of the conda environment the scripts install into. If not specified, the directory name of `DIRPATH_PACKAGES` is used (it must exist as a local conda environment).
+
+```bash
+packing-packages scripts ./myenv -n another-env
+```
+
+#### `-o, --output-dir`
+
+Output directory for generated scripts. If not specified, scripts are written to the package directory.
+
+```bash
+packing-packages scripts ./myenv -o ./scripts
+```
+
+#### `--no-create-env`
+
+Do not create a new environment in the scripts; install into an existing one instead.
+
+```bash
+packing-packages scripts ./myenv/diffs/20260101_1200 -n myenv --no-create-env
+```
+
+#### `-e, --encoding`
+
+Encoding for the generated `.bat` file. If not specified, the system default encoding is used.
 
 ## Practical Examples
 
@@ -369,9 +391,11 @@ This creates the following structure:
     │   ├── python-3.11.0-h1234567_0.tar.bz2
     │   ├── numpy-1.24.3-py311h1234567_0.conda
     │   └── ...
-    └── pypi/
-        ├── requests-2.31.0-py3-none-any.whl
-        └── ...
+    ├── pypi/
+    │   ├── requests-2.31.0-py3-none-any.whl
+    │   └── ...
+    ├── install_packages.bat
+    └── install_packages.sh
 ```
 
 Or from a YAML file:
@@ -409,7 +433,7 @@ python -m pip install --no-deps --no-build-isolation ./myenv/pypi/*
 
 #### Method 2: Using Generated Install Scripts
 
-If you generated scripts on the source device using `--generate-scripts`, you'll have:
+`pack` generates install scripts automatically, so you'll have:
 ```
 ./myenv/
 ├── conda/
