@@ -12,6 +12,7 @@ To see available commands and options, display the help:
 packing-packages --help
 packing-packages pack --help
 packing-packages install --help
+packing-packages scripts --help
 ```
 
 ### Check Version
@@ -46,17 +47,20 @@ This will save the packages to the current directory (`.`) with the following st
     │   ├── numpy-1.24.3-py311h1234567_0.conda
     │   ├── pandas-2.0.0-py311h1234567_0.tar.bz2
     │   └── ...
-    └── pypi/
-        ├── requests-2.31.0-py3-none-any.whl
-        ├── beautifulsoup4-4.12.2-py3-none-any.whl
-        ├── somepackage-1.0.0.tar.gz
-        └── ...
+    ├── pypi/
+    │   ├── requests-2.31.0-py3-none-any.whl
+    │   ├── beautifulsoup4-4.12.2-py3-none-any.whl
+    │   ├── somepackage-1.0.0.tar.gz
+    │   └── ...
+    ├── install_packages.bat   # Generated install script (Windows)
+    └── install_packages.sh    # Generated install script (Unix/Linux/macOS)
 ```
 
 **Directory Structure:**
 - `<envname>/`: Directory named after the conda environment
   - `conda/`: Contains conda packages (`.tar.bz2` or `.conda` files)
   - `pypi/`: Contains PyPI packages (`.whl` or `.tar.gz` files)
+  - `install_packages.bat` / `install_packages.sh`: Install scripts (skip with `--no-scripts`)
 
 ### Options
 
@@ -167,12 +171,16 @@ packing-packages pack yaml environment.yaml
 The output structure is the same as the `pack` command:
 ```
 .
-└── <envname>/          # Default: directory name from YAML or current directory
+└── <envname>/          # Named after the `name:` field of the YAML file
     ├── conda/
     │   └── *.tar.bz2, *.conda files
-    └── pypi/
-        └── *.whl, *.tar.gz files
+    ├── pypi/
+    │   └── *.whl, *.tar.gz files
+    ├── install_packages.bat
+    └── install_packages.sh
 ```
+
+`pack yaml` requires PyYAML (`pip install "packing-packages[optional]"`).
 
 #### `-p, --platform`
 
@@ -429,16 +437,29 @@ This creates the same structure, but packages are downloaded for the specified p
 
 ### Destination Device (Offline Environment)
 
-#### Method 1: Using Standard Install Commands
+Copy the packed directory (e.g., `./myenv/`) to the destination device.
 
-Assuming you have the packed environment structure:
+#### Recommended: Using Generated Install Scripts
+
+`pack` generates install scripts automatically. They do not require `packing-packages` on the destination device:
+
+```bash
+# Windows (run from "Miniforge Prompt" or "Anaconda Prompt")
+myenv\install_packages.bat
+
+# Unix/Linux/macOS
+./myenv/install_packages.sh
 ```
-./myenv/
-├── conda/
-│   └── *.tar.bz2, *.conda
-└── pypi/
-    └── *.whl, *.tar.gz
-```
+
+The scripts:
+
+- create the environment and install conda packages first, then PyPI packages
+- ask `y/[n]` before removing and recreating an environment that already exists
+- `install_packages.sh` stops at the first error
+
+To install into an environment with another name, regenerate the scripts with [`scripts` Command](#scripts-command).
+
+#### Alternative 1: Using Standard Install Commands
 
 ```bash
 # Create the environment
@@ -452,32 +473,9 @@ conda install --use-local --offline ./myenv/conda/*
 python -m pip install --no-deps --no-build-isolation ./myenv/pypi/*
 ```
 
-#### Method 2: Using Generated Install Scripts
+Wildcards (`*`) are not expanded on Windows `cmd`; use the generated scripts there.
 
-`pack` generates install scripts automatically, so you'll have:
-```
-./myenv/
-├── conda/
-│   └── *.tar.bz2, *.conda
-├── pypi/
-│   └── *.whl, *.tar.gz
-├── install_packages.bat
-└── install_packages.sh
-```
-
-On the destination device:
-
-```bash
-# Windows
-cd myenv
-install_packages.bat
-
-# Unix/Linux
-cd myenv
-./install_packages.sh
-```
-
-#### Method 3: Using `packing-packages install`
+#### Alternative 2: Using `packing-packages install`
 
 If `packing-packages` is installed on the destination device:
 
@@ -487,7 +485,7 @@ conda activate myenv
 packing-packages install ./myenv
 ```
 
-This automatically detects and installs packages from both `conda/` and `pypi/` subdirectories.
+This installs packages one by one and continues even if some fail, reporting the failed packages at the end. It is slower, but useful when you want to install as much as possible and handle the rest manually.
 
 ## Troubleshooting
 
@@ -509,6 +507,15 @@ export HTTP_PROXY="your proxy"
 export HTTPS_PROXY="your proxy"
 ```
 
+### Handling Packing Errors
+
+Packages that cannot be downloaded are reported at the end of `pack` (use `--strict` to make it an error). Typical causes:
+
+- Packages installed from a local path, in editable mode (`pip install -e`), or from a VCS URL
+- Packages from a package index other than PyPI
+
+PyTorch wheels with a local version label (e.g., `torch==2.1.0+cu118`) are downloaded from the PyTorch index (`https://download.pytorch.org/whl/cu118`) automatically.
+
 ### Handling Installation Errors
 
-The `packing-packages install` command skips packages that fail and continues. Check the error logs and install them manually if necessary.
+`install_packages.sh` stops at the first error. The `packing-packages install` command skips packages that fail and continues. Check the error logs and install them manually if necessary.
