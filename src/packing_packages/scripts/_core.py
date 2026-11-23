@@ -19,6 +19,32 @@ __all__ = ("generate_install_scripts",)
 
 _logger = get_child_logger(__name__)
 
+BAT_CHECK_CONDA = (
+    "REM Check that conda is available",
+    "where conda >nul 2>nul",
+    "if not errorlevel 1 goto conda_found",
+    "echo [ERROR] 'conda' command not found.",
+    'echo Please run this script from "Miniforge Prompt" or "Anaconda Prompt",',
+    "echo or make sure conda is available in PATH.",
+    "pause",
+    "exit /b 1",
+    ":conda_found",
+    "",
+)
+"""Batch lines to abort with guidance when conda is not available."""
+
+SH_CHECK_CONDA = (
+    "# Check that conda is available",
+    "if ! command -v conda >/dev/null 2>&1; then",
+    "    echo \"[ERROR] 'conda' command not found.\" >&2",
+    '    echo "Please install conda (e.g., Miniforge), '
+    "or run 'conda init' and restart your shell.\" >&2",
+    "    exit 1",
+    "fi",
+    "",
+)
+"""Shell lines to abort with guidance when conda is not available."""
+
 MAX_LETTER_LENGTH_BAT = 7000
 """Maximum number of letters in a batch file.
 
@@ -176,6 +202,7 @@ def generate_install_scripts(
         "",
         f"set env_name={env_name}",
         "",
+        *BAT_CHECK_CONDA,
     ]
     if create_env:
         bat_content.extend(
@@ -276,6 +303,8 @@ def generate_install_scripts(
         'cd "$SCRIPT_DIR"',
         "",
         f"env_name={env_name}",
+        "",
+        *SH_CHECK_CONDA,
     ]
     if create_env:
         sh_content.extend(

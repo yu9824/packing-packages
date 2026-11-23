@@ -86,3 +86,23 @@ def test_split_pypi_packages_by_priority():
     assert split_pypi_packages_by_priority(paths) == (paths[:2], paths[2:])
     assert split_pypi_packages_by_priority(paths[:2]) == (paths[:2], ())
     assert split_pypi_packages_by_priority(()) == ((), ())
+
+
+@pytest.mark.parametrize("create_env", [True, False])
+def test_generate_install_scripts_check_conda(
+    tmp_path: Path, create_env: bool
+):
+    _make_packages(tmp_path, conda=("python-3.12.0-h0_0.conda",), pypi=())
+    bat, sh = _read_scripts(
+        generate_install_scripts(
+            tmp_path,
+            env_name=ENV_NAME,
+            encoding="utf-8",
+            create_env=create_env,
+        )
+    )
+
+    # the check must run before any conda command
+    assert bat.index("where conda") < bat.index("call conda")
+    assert sh.index("command -v conda") < sh.index("\nconda ")
+    assert "Miniforge Prompt" in bat
